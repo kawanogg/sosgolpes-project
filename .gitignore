@@ -1,2 +1,8 @@
+keys/
+db_data/
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+*.log
 .env
-*.pem

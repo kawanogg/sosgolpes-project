@@ -1,128 +1,157 @@
-🛡️ SOS Golpes
+# SOS Golpes
 
-O SOS Golpes é uma plataforma web desenvolvida em PHP focada na capacitação do cidadão contra ataques de engenharia social (Phishing, Quishing e Vazamento de Credenciais).
+Plataforma web desenvolvida em PHP focada na capacitacao do cidadao contra ataques de engenharia social (Phishing, Quishing e Vazamento de Credenciais).
 
-Este projeto foi construído com a mentalidade de Security by Design, implementando criptografia assimétrica (RSA) no lado do cliente, sanitização rigorosa de dados e proteção contra as principais vulnerabilidades web (OWASP).
+Projeto construido com a mentalidade de **Security by Design**, implementando criptografia assimetrica (RSA) no lado do cliente, sanitizacao rigorosa de dados e protecao contra as principais vulnerabilidades web (OWASP).
 
-🐳 1. Infraestrutura e Execução (Docker)
+---
 
-Para garantir que o ambiente de desenvolvimento seja idêntico para todos os membros da equipe e fácil de testar, o projeto foi conteinerizado utilizando o Docker.
+## Estrutura do Projeto
 
-1.1. Estrutura Docker
+```
+sos-golpes/
+├── .env                          # Variaveis de ambiente (senhas, API keys)
+├── .gitignore
+├── Dockerfile                    # PHP 8.2 + Apache + OpenSSL + cURL
+├── docker-compose.yml            # Orquestracao web + MySQL
+├── entrypoint.sh                 # Gera chaves RSA automaticamente no startup
+├── database/
+│   ├── database.php              # Conexao PDO com MySQL via env vars
+│   └── schema.sql                # Tabelas: Perfil, Usuario, Registro_Leak, etc.
+├── keys/                         # Par RSA gerado automaticamente (nao versionar)
+│   ├── private_key.pem
+│   └── public_key.pem
+└── main/
+    ├── php/
+    │   ├── analisar_link.php     # Motor de analise de links (3 verificacoes)
+    │   ├── chave_publica.php     # Endpoint que serve a chave publica RSA
+    │   └── processar_senha.php   # Verificacao de senhas vazadas (RSA + SHA-256)
+    ├── static/
+    │   ├── css/style.css
+    │   └── js/
+    │       ├── analisar_link.js  # Frontend da analise de links + QR Code
+    │       └── crypto_rsa.js     # Criptografia RSA client-side (Web Crypto API)
+    └── views/
+        ├── dashboard.html        # Pagina de analise de links e QR Codes
+        └── password_checker.html # Pagina de auditoria de senhas
+```
 
-Crie os seguintes arquivos na raiz do projeto:
+---
 
-Arquivo: Dockerfile
-Este arquivo prepara o servidor web Apache com o PHP e as extensões de segurança necessárias (OpenSSL e PDO MySQL).
+## Como Executar
 
-FROM php:8.2-apache
+### Pre-requisitos
 
-# Atualiza os pacotes e instala as extensões necessárias para o projeto
-RUN apt-get update && apt-get install -y \
-    libssl-dev \
-    && docker-php-ext-install pdo pdo_mysql
+- Docker e Docker Compose instalados
 
-# Ativa o mod_rewrite do Apache para rotas amigáveis (caso necessário futuramente)
-RUN a2enmod rewrite
+### 1. Configurar variaveis de ambiente
 
-# Define o diretório de trabalho principal
-WORKDIR /var/www/html
+Edite o arquivo `.env` na raiz do projeto:
 
-# Garante que o usuário do Apache tenha as permissões corretas
-RUN chown -R www-data:www-data /var/www/html
+```env
+# Banco de dados
+DB_HOST=db
+MYSQL_DATABASE=sos_golpes
+MYSQL_ROOT_PASSWORD=root_password
 
+# Google Safe Browsing (opcional - obter em https://console.cloud.google.com)
+GOOGLE_SAFE_BROWSING_KEY=
+```
 
-Arquivo: docker-compose.yml
-Este arquivo orquestra o servidor web (PHP) e o servidor de banco de dados (MySQL), conectando-os em uma rede interna segura.
+### 2. Subir os containers
 
-version: '3.8'
-
-services:
-  web:
-    build: .
-    container_name: sos_golpes_web
-    ports:
-      - "8080:80"
-    volumes:
-      # Mapeia a raiz do seu projeto para a raiz do Apache
-      - ./:/var/www/html
-    environment:
-      - DB_HOST=db
-      - DB_NAME=sos_golpes
-      - DB_USER=root
-      - DB_PASS=root_password
-    depends_on:
-      - db
-
-  db:
-    image: mysql:8.0
-    container_name: sos_golpes_db
-    restart: always
-    environment:
-      MYSQL_DATABASE: sos_golpes
-      MYSQL_ROOT_PASSWORD: root_password
-    ports:
-      - "3306:3306"
-    volumes:
-      # Executa o seu schema.sql automaticamente na primeira vez que o banco subir
-      - ./database:/docker-entrypoint-initdb.d
-
-
-1.2. Como Executar
-
-Certifique-se de ter o Docker e o Docker Compose instalados na sua máquina.
-
-Abra o terminal na raiz do projeto e execute:
-
+```bash
 docker-compose up -d
+```
 
+Na primeira execucao, o sistema automaticamente:
+- Cria o banco de dados e executa o `schema.sql`
+- Gera o par de chaves RSA em `keys/`
 
-Acesse a aplicação através do navegador em: http://localhost:8080/main/views/password_checker.php
+### 3. Acessar a aplicacao
 
-O banco de dados estará disponível na porta 3306 localmente.
+- **Auditoria de Senhas:** http://localhost:8080/main/views/password_checker.html
+- **Analise de Links:** http://localhost:8080/main/views/dashboard.html
 
-🚀 2. Planejamento e Próximos Passos
+### 4. Parar os containers
 
-Com a infraestrutura base pronta e o módulo de Auditoria de Senhas (RSA + BCRYPT/SHA-256) concluído, o desenvolvimento vai focar nos seguintes pilares táticos para cumprir os requisitos do projeto:
+```bash
+docker-compose down
+```
 
-Fase 1: Autenticação Segura e 2FA (Requisito #3)
+Para remover tambem os dados do banco:
 
-O coração do controle de acesso ao painel administrativo.
+```bash
+docker-compose down -v
+```
 
-[ ] Criar a base visual das páginas de Login e Registro.
+---
 
-[ ] Desenvolver a classe AuthController.php responsável por validar credenciais utilizando hashes BCRYPT.
+## Modulos Implementados
 
-[ ] Implementar a geração e validação de tokens TOTP (Time-Based One-Time Password) para o duplo fator de autenticação (2FA) obrigatório.
+### Auditoria de Senhas
 
-[ ] Criar o middleware de controle de sessão para garantir o Role-Based Access Control (RBAC) - Requisito #7.
+Verifica se uma senha ja foi exposta em vazamentos de dados.
 
-Fase 2: Painel do Administrador (CRUD de Ameaças - Requisito #9)
+**Fluxo de seguranca:**
+1. Senha e criptografada com RSA (Web Crypto API) no navegador
+2. Enviada ao backend via HTTPS (base64)
+3. Backend descriptografa com chave privada
+4. Gera hash SHA-256 da senha
+5. Limpa a senha da memoria imediatamente
+6. Consulta o hash contra a tabela `Registro_Leak`
 
-A interface de gestão interna do sistema.
+### Analise de Links
 
-[ ] Desenvolver a view (HTML/CSS) do Painel Administrativo.
+Analisa URLs com 3 verificacoes reais de seguranca:
 
-[ ] Criar o controller (AdminController.php) para executar o CRUD na tabela Registro_Leak, permitindo a inserção de novas senhas expostas.
+| Verificacao | Descricao | Pontuacao Max |
+|---|---|---|
+| **Heuristica** | Detecta IPs, TLDs suspeitos, encurtadores, portas nao padrao | 40 pts |
+| **Redirecionamentos** | Conta redirects e detecta mudanca de dominio via `get_headers()` | 30 pts |
+| **Google Safe Browsing** | Consulta base de ameacas do Google (malware, phishing) | 50 pts |
 
-[ ] Implementar a visualização de Estatísticas e a listagem da tabela Log_Acesso para que o administrador possa monitorar abusos do sistema (Requisito #2).
+**Classificacao de risco (0-100):**
+- **0-29:** Seguro
+- **30-59:** Suspeito
+- **60+:** Malicioso
 
-Fase 3: Motor de Análise de Links e QR Codes (Requisitos #4 e #5)
+### Analise de QR Codes
 
-A ferramenta primária de defesa contra Phishing e Quishing.
+Decodifica QR Codes no navegador usando a biblioteca `html5-qrcode` e envia a URL extraida para o motor de analise de links.
 
-[ ] Construir a interface para os usuários inserirem URLs ou enviarem imagens de QR Codes.
+---
 
-[ ] Desenvolver a lógica no LinkController.php para validar o nível de perigo das URLs submetidas.
+## Tecnologias
 
-[ ] Integrar biblioteca JavaScript de processamento de imagem para extrair a URL de um QR Code e enviá-la para a análise segura no backend.
+| Componente | Tecnologia |
+|---|---|
+| Backend | PHP 8.2 + Apache |
+| Banco de Dados | MySQL 8.0 |
+| Criptografia | RSA 2048-bit (OpenSSL + Web Crypto API) |
+| Containers | Docker + Docker Compose |
+| Analise de Links | Heuristica + get_headers() + Google Safe Browsing API v4 |
+| QR Code | html5-qrcode (client-side) |
 
-Fase 4: Auditoria de Segurança e Testes Finais
+---
 
-Validação intensiva para garantir que nenhuma vulnerabilidade foi introduzida.
+## Proximos Passos
 
-[ ] Sanitização Global: Revisar todos os formulários e controllers para garantir o uso estrito de Prepared Statements (PDO) contra SQL Injection (Requisito #8).
+### Fase 1: Autenticacao Segura e 2FA
 
-[ ] Limpeza de Logs: Verificar ativamente os registros de erro e acesso para garantir que nenhuma informação sensível (como senhas em texto claro) esteja sendo gravada (Requisito #10).
+- [ ] Paginas de Login e Registro
+- [ ] Autenticacao com hashes BCRYPT
+- [ ] Duplo fator de autenticacao (TOTP)
+- [ ] Controle de sessao com RBAC (Administrador / Cidadao)
 
-[ ] Revisão final do fluxo do Diagrama de Fluxo de Dados (DFD).
+### Fase 2: Painel do Administrador
+
+- [ ] Interface do Painel Administrativo
+- [ ] CRUD da tabela Registro_Leak
+- [ ] Visualizacao de estatisticas e Log_Acesso
+
+### Fase 4: Auditoria de Seguranca
+
+- [ ] Revisao de Prepared Statements (SQL Injection)
+- [ ] Verificacao de logs (nenhuma senha em texto claro)
+- [ ] Revisao final do DFD

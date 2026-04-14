@@ -47,6 +47,6 @@ INSERT INTO Perfil (nome_perfil) VALUES ('Administrador'), ('Cidadao');
 INSERT INTO Registro_Leak (senha_vazada_hash, fonte_vazamento) VALUES 
 (SHA2('123456', 256), 'RockYou2021'),
 (SHA2('senha123', 256), 'Vazamento 2'),
-(SHA2('admin', 256), 'Roteadores Padrão'),
-(SHA2('BombaTermonuclear', 256), 'Fórum de Gatos CatLovers'),
-(SHA2('PUCPR', 256), 'Ataque Phishing Universitário');
+(SHA2('admin', 256), 'Roteadores Padrao'),
+(SHA2('BombaTermonuclear', 256), 'Forum de Gatos CatLovers'),
+(SHA2('PUCPR', 256), 'Ataque Phishing Universidades');

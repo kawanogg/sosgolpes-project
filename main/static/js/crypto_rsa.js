@@ -1,9 +1,16 @@
 document.getElementById('formularioAuditoriaSenha').addEventListener('submit', async function(evento) {
+    evento.preventDefault();
+
     const inputSenha = document.getElementById('senha');
     const senhaClara = inputSenha.value;
-    const pemChavePublica = document.getElementById('chavePublica').value;
 
     try {
+        const respostaChave = await fetch('/main/php/chave_publica.php');
+        if (!respostaChave.ok) {
+            throw new Error('Nao foi possivel obter a chave publica.');
+        }
+        const pemChavePublica = await respostaChave.text();
+
         const senhaCriptografada = await criptografarRSA(senhaClara, pemChavePublica);
         document.getElementById('carga_criptografada').value = senhaCriptografada;
         
@@ -11,7 +18,7 @@ document.getElementById('formularioAuditoriaSenha').addEventListener('submit', a
             carga_criptografada: senhaCriptografada
         };
 
-        const resposta = await fetch('/processar_senha.php', {
+        const resposta = await fetch('/main/php/processar_senha.php', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json', 
@@ -37,15 +44,16 @@ document.getElementById('formularioAuditoriaSenha').addEventListener('submit', a
         inputSenha.value = '';
 
     } catch (erro) {
-        console.error("Erro na rotina de criptografia:", erro);
-        alert("Falha na camada de segurança. Por favor, recarregue a página.");
+        console.error("Erro de criptografia:", erro);
+        alert("Falha na camada de seguranca. Por favor, recarregue a pagina.");
     }
 });
 
 async function criptografarRSA(texto, pem) {
-    const cabecalho = "-----BEGIN PUBLIC KEY-----";
-    const rodape = "-----END PUBLIC KEY-----";
-    const conteudoPem = pem.substring(cabecalho.length, pem.length - rodape.length).replace(/\s/g, '');
+    const conteudoPem = pem
+        .replace('-----BEGIN PUBLIC KEY-----', '')
+        .replace('-----END PUBLIC KEY-----', '')
+        .replace(/\s/g, '');
     
     const stringBinaria = window.atob(conteudoPem);
     const bytesBinarios = new Uint8Array(stringBinaria.length);
@@ -56,7 +64,7 @@ async function criptografarRSA(texto, pem) {
     const chavePublica = await window.crypto.subtle.importKey(
         "spki",
         bytesBinarios.buffer,
-        { name: "RSA-OAEP", hash: "SHA-256" },
+        { name: "RSA-OAEP", hash: "SHA-1" },
         true,
         ["encrypt"]
     );
