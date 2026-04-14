@@ -32,7 +32,7 @@ sos-golpes/
     │       ├── analisar_link.js  # Frontend da analise de links + QR Code
     │       └── crypto_rsa.js     # Criptografia RSA client-side (Web Crypto API)
     └── views/
-        ├── dashboard.html        # Pagina de analise de links e QR Codes
+        ├── link_analysis.html        # Pagina de analise de links e QR Codes
         └── password_checker.html # Pagina de auditoria de senhas
 ```
 
@@ -71,7 +71,7 @@ Na primeira execucao, o sistema automaticamente:
 ### 3. Acessar a aplicacao
 
 - **Auditoria de Senhas:** http://localhost:8080/main/views/password_checker.html
-- **Analise de Links:** http://localhost:8080/main/views/dashboard.html
+- **Analise de Links:** http://localhost:8080/main/views/link_analysis.html
 
 ### 4. Parar os containers
 

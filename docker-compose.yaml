@@ -3,33 +3,34 @@ version: '3.8'
 services:
   web:
     build: .
-    env_file:
-      - .env
     container_name: sos_golpes_web
     ports:
       - "8080:80"
     volumes:
-      - ./:/var/www/html
-    environment:
-      - DB_HOST=db
-      - DB_NAME=${DB_NAME:-sos_golpes}
-      - DB_USER=${DB_USER:-root}
-      - DB_PASS=${DB_PASS:-root}
+      - ./main:/var/www/html/main
+      - ./database:/var/www/html/database
+    env_file:
+      - .env
     depends_on:
       db:
         condition: service_healthy
 
   db:
     image: mysql:8.0
-    env_file:
-      - .env
     container_name: sos_golpes_db
     restart: always
+    env_file:
+      - .env
     ports:
       - "3306:3306"
     volumes:
       - ./database/schema.sql:/docker-entrypoint-initdb.d/schema.sql
       - db_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD-SHELL", "mysqladmin ping -h localhost -uroot -p$$MYSQL_ROOT_PASSWORD"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
 
 volumes:
   db_data:

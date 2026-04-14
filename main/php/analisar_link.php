@@ -79,7 +79,7 @@ function analisarHeuristica(string $url, string $dominio, array $partes): array
     $encurtadores = ['bit.ly', 'tinyurl.com', 'goo.gl', 't.co', 'cutt.ly', 'rb.gy'];
     foreach ($encurtadores as $e) {
         if ($dominio === $e) {
-            $alertas[] = "URL encurtada ({$e}). Destino oculto.";
+            $alertas[] = "URL encurtada ({$e}).";
             $pontuacao += 20;
             break;
         }
@@ -170,18 +170,29 @@ function analisarRedirecionamentos(string $url): array
     $alertas = [];
     $pontuacao = 0;
 
-    $headers = @get_headers($url, true);
+    $contexto = stream_context_create([
+        'http' => [
+            'timeout' => 10,
+            'follow_location' => 1,
+            'max_redirects' => 10,
+        ],
+        'ssl' => [
+            'verify_peer' => false,
+            'verify_peer_name' => false,
+        ],
+    ]);
+
+    $headers = @get_headers($url, true, $contexto);
 
     if ($headers === false) {
         return [
             'nome' => 'Redirecionamentos',
-            'status' => 'alerta',
-            'alertas' => ['Erro ao acessar a URL.'],
-            'pontuacao' => 10,
+            'status' => 'indisponivel',
+            'alertas' => ['Nao foi possivel verificar redirecionamentos.'],
+            'pontuacao' => 0,
         ];
     }
 
-    // Conta redirecionamentos pelo header Location
     $locations = $headers['Location'] ?? $headers['location'] ?? [];
     if (is_string($locations)) {
         $locations = [$locations];
@@ -197,7 +208,6 @@ function analisarRedirecionamentos(string $url): array
         $alertas[] = 'Sem redirecionamentos.';
     }
 
-    // Dominio final diferente
     $dom_ini = parse_url($url, PHP_URL_HOST);
     $url_final = $num_redirects > 0 ? end($locations) : $url;
     $dom_fim = parse_url($url_final, PHP_URL_HOST);

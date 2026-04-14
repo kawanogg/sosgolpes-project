@@ -1,7 +1,7 @@
 <?php
 header('Content-Type: text/plain');
 
-$caminho = __DIR__ . '/../../keys/public_key.pem';
+$caminho = '/var/keys/public_key.pem';
 
 if (!file_exists($caminho)) {
     http_response_code(500);
