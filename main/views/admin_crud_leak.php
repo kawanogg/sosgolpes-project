@@ -1,5 +1,5 @@
 <?php
-require_once '../database/database.php';
+require_once '../../database/database.php';
 
 // Função para sanitizar entrada
 function sanitize($data) {

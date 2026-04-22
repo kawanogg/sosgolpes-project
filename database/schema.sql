@@ -25,12 +25,12 @@ CREATE TABLE Registro_Leak (
 
 CREATE TABLE Analise_Link (
     id_analise INT AUTO_INCREMENT PRIMARY KEY,
-    id_usuario INT NOT NULL,
+    id_usuario INT,
     url_analisada TEXT NOT NULL,
     nivel_perigo ENUM('Seguro', 'Suspeito', 'Malicioso') NOT NULL,
     detalhes_analise TEXT,
     data_consulta TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (id_usuario) REFERENCES Usuario(id_usuario) ON DELETE CASCADE
+    FOREIGN KEY (id_usuario) REFERENCES Usuario(id_usuario) ON DELETE SET NULL
 );
 
 CREATE TABLE Log_Acesso (
