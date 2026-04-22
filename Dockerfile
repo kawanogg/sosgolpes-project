@@ -18,4 +18,4 @@ COPY main/views/index.php /var/www/html/index.php
 
 RUN chown -R www-data:www-data /var/www/html
 
-ENTRYPOINT ["entrypoint.sh"]
+ENTRYPOINT ["/usr/local/bin/entrypoint.sh"]

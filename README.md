@@ -23,6 +23,7 @@ sos-golpes/
 │   └── public_key.pem
 └── main/
     ├── php/
+    │   ├── admin_crud_leak.php    # CRUD para tabela Registro_Leak
     │   ├── analisar_link.php     # Motor de analise de links (3 verificacoes)
     │   ├── chave_publica.php     # Endpoint que serve a chave publica RSA
     │   └── processar_senha.php   # Verificacao de senhas vazadas (RSA + SHA-256)
@@ -32,6 +33,8 @@ sos-golpes/
     │       ├── analisar_link.js  # Frontend da analise de links + QR Code
     │       └── crypto_rsa.js     # Criptografia RSA client-side (Web Crypto API)
     └── views/
+        ├── admin_panel.php       # Interface do painel administrativo
+        ├── admin_stats.php       # Visualizacao de estatisticas e logs
         ├── link_analysis.html        # Pagina de analise de links e QR Codes
         └── password_checker.html # Pagina de auditoria de senhas
 ```
@@ -72,6 +75,7 @@ Na primeira execucao, o sistema automaticamente:
 
 - **Auditoria de Senhas:** http://localhost:8080/main/views/password_checker.html
 - **Analise de Links:** http://localhost:8080/main/views/link_analysis.html
+- **Painel Administrativo:** http://localhost:8080/main/views/admin_panel.php
 
 ### 4. Parar os containers
 
@@ -120,6 +124,15 @@ Analisa URLs com 3 verificacoes reais de seguranca:
 
 Decodifica QR Codes no navegador usando a biblioteca `html5-qrcode` e envia a URL extraida para o motor de analise de links.
 
+### Painel do Administrador
+
+Interface web para administradores gerenciarem o sistema.
+
+**Funcionalidades:**
+- **CRUD de Vazamentos:** Adicionar, editar, visualizar e deletar registros na tabela `Registro_Leak`
+- **Estatísticas:** Visualizar métricas gerais (usuários, análises, vazamentos) e distribuição por nível de perigo
+- **Logs de Acesso:** Histórico de ações realizadas no sistema com data, usuário e IP
+
 ---
 
 ## Tecnologias
@@ -146,9 +159,9 @@ Decodifica QR Codes no navegador usando a biblioteca `html5-qrcode` e envia a UR
 
 ### Fase 2: Painel do Administrador
 
-- [ ] Interface do Painel Administrativo
-- [ ] CRUD da tabela Registro_Leak
-- [ ] Visualizacao de estatisticas e Log_Acesso
+- [x] Interface do Painel Administrativo
+- [x] CRUD da tabela Registro_Leak
+- [x] Visualizacao de estatisticas e Log_Acesso
 
 ### Fase 4: Auditoria de Seguranca
 

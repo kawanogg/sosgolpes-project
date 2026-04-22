@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/sh
 
 KEYS_DIR="/var/keys"
 
