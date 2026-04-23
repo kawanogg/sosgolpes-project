@@ -66,6 +66,16 @@ try {
         ]);
     }
 
+    // Log da verificacao
+    try {
+        $acao = "Verificacao de senha - Status: " . (!empty($resultado) ? 'Vazada' : 'Segura');
+        $ip = $_SERVER['REMOTE_ADDR'] ?? 'unknown';
+        $stmt_log = $pdo->prepare("INSERT INTO Log_Acesso (id_usuario, acao_realizada, endereco_ip) VALUES (?, ?, ?)");
+        $stmt_log->execute([null, $acao, $ip]);
+    } catch (Exception $e) {
+        error_log("Erro ao salvar log: " . $e->getMessage());
+    }
+
 } catch (PDOException $e) {
     error_log("Erro de Banco de Dados: " . $e->getMessage());
     http_response_code(500);

@@ -1,5 +1,6 @@
 <?php
 header('Content-Type: application/json; charset=utf-8');
+require_once '../../database/database.php';
 
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     http_response_code(405);
@@ -39,6 +40,18 @@ if ($pontuacao >= 60) {
 } else {
     $nivel = 'Seguro';
     $resumo = 'Esta URL nao apresentou indicios significativos de risco.';
+}
+
+// Salvar analise no banco
+try {
+    $pdo = conectarBanco();
+    $acao = "Analise de link: {$url} - Nivel: {$nivel}";
+    $ip = $_SERVER['REMOTE_ADDR'] ?? 'unknown';
+    $stmt = $pdo->prepare("INSERT INTO Log_Acesso (id_usuario, acao_realizada, endereco_ip) VALUES (?, ?, ?)");
+    $stmt->execute([null, $acao, $ip]);
+} catch (Exception $e) {
+    // Log error if needed
+    error_log("Erro ao salvar log: " . $e->getMessage());
 }
 
 echo json_encode([
