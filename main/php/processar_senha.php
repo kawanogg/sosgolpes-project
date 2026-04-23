@@ -38,7 +38,8 @@ if (!$sucesso || empty($senha_clara)) {
     die(json_encode(['status' => 'erro', 'mensagem' => 'Falha de seguranca: Os dados foram corrompidos ou adulterados.']));
 }
 
-$hash_pesquisa = hash('sha256', $senha_clara);
+$senha_clara_limpa = trim($senha_clara, " \t\n\r\0\x0B");
+$hash_pesquisa = hash('sha256', $senha_clara_limpa);
 
 $senha_clara = null;
 unset($senha_clara);

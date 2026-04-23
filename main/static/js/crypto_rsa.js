@@ -5,7 +5,8 @@ document.getElementById('formularioAuditoriaSenha').addEventListener('submit', a
     const senhaClara = inputSenha.value;
 
     try {
-        const respostaChave = await fetch('/keys/public_key.pem');
+        const respostaChave = await fetch('/main/php/chave_publica.php');        
+
         if (!respostaChave.ok) {
             throw new Error('Não foi possível obter a chave pública.');
         }
@@ -19,7 +20,7 @@ document.getElementById('formularioAuditoriaSenha').addEventListener('submit', a
             throw new Error('Falha ao criptografar a senha.');
         }
 
-        document.getElementById('dadosCriptografados').value = senhaCriptografada;
+        document.getElementById('carga_criptografada')
         
         const dados = {
             dadosCriptografados: senhaCriptografada
@@ -52,4 +53,4 @@ document.getElementById('formularioAuditoriaSenha').addEventListener('submit', a
         console.error("Erro de criptografia:", erro);
         alert("Falha na camada de segurança. Por favor, recarregue a página.");
     }
-});
+}); 
