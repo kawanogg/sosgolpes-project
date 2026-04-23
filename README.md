@@ -63,7 +63,7 @@ docker-compose down -v
 - [x] CRUD da tabela Registro_Leak
 - [x] Visualizacao de estatisticas e Log_Acesso
 
-### Fase 4: Auditoria de Seguranca
+### Fase 4: Seguranca
 
 - [ ] Revisao de Prepared Statements (SQL Injection)
 - [ ] Verificacao de logs (nenhuma senha em texto claro)

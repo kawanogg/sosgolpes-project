@@ -27,8 +27,9 @@ if (empty($dominio)) {
 $heuristica = analisarHeuristica($url, $dominio, $partes);
 $redirect = analisarRedirecionamentos($url);
 $gsb = analisarGoogleSafeBrowsing($url);
+$vt = analisarVirusTotal($url);
 
-$pontuacao = $heuristica['pontuacao'] + $redirect['pontuacao'] + $gsb['pontuacao'];
+$pontuacao = $heuristica['pontuacao'] + $redirect['pontuacao'] + $gsb['pontuacao'] + $vt['pontuacao'];
 $pontuacao = min($pontuacao, 100);
 
 if ($pontuacao >= 60) {
@@ -61,6 +62,7 @@ echo json_encode([
         'heuristica' => $heuristica,
         'redirecionamentos' => $redirect,
         'google_safe_browsing' => $gsb,
+        'virus_total' => $vt,
     ],
     'pontuacao_risco' => $pontuacao,
     'nivel_perigo' => $nivel,
@@ -236,4 +238,59 @@ function analisarRedirecionamentos(string $url): array
         'alertas' => $alertas,
         'pontuacao' => min($pontuacao, 30),
     ];
+}
+
+function analisarVirusTotal(string $url): array
+{
+    $curl = curl_init();
+
+    $url_id = rtrim(strtr(base64_encode($url), '+/', '-_'), '=');
+    
+    curl_setopt_array($curl, [
+        CURLOPT_URL => "https://www.virustotal.com/api/v3/urls/{$url_id}",
+        CURLOPT_RETURNTRANSFER => true,
+        CURLOPT_ENCODING => "",
+        CURLOPT_MAXREDIRS => 10,
+        CURLOPT_TIMEOUT => 30,
+        CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
+        CURLOPT_CUSTOMREQUEST => "GET",
+        CURLOPT_HTTPHEADER => [
+            "accept: appl   ication/json",
+            "x-apikey: " . getenv('VIRUSTOTAL_KEY')
+        ],
+    ]);
+
+    $response = curl_exec($curl);
+    $err = curl_error($curl);
+
+    curl_close($curl);
+
+    if ($err) {
+        return [
+            'nome' => 'VirusTotal',
+            'status' => 'indisponivel',
+            'alertas' => ['Erro na consulta a API.'],
+            'pontuacao' => 0,
+        ];
+    }  
+    else {
+        $resultado = json_decode($response, true);
+        $positivos = $resultado['data']['attributes']['last_analysis_stats']['malicious'] ?? 0;
+
+        if ($positivos > 0) {
+            return [
+                'nome' => 'VirusTotal',
+                'status' => 'perigo',
+                'alertas' => ["PERIGO: VirusTotal identificou {$positivos} deteccoes maliciosas."],
+                'pontuacao' => 50,
+            ];
+        } else {
+            return [
+                'nome' => 'VirusTotal',
+                'status' => 'ok',
+                'alertas' => ['URL nao apresentou deteccoes maliciosas no VirusTotal.'],
+                'pontuacao' => 0,
+            ];
+        }
+    }   
 }
