@@ -5,17 +5,24 @@ document.getElementById('formularioAuditoriaSenha').addEventListener('submit', a
     const senhaClara = inputSenha.value;
 
     try {
-        const respostaChave = await fetch('/main/php/chave_publica.php');
+        const respostaChave = await fetch('/keys/public_key.pem');
         if (!respostaChave.ok) {
-            throw new Error('Nao foi possivel obter a chave publica.');
+            throw new Error('Não foi possível obter a chave pública.');
         }
         const pemChavePublica = await respostaChave.text();
 
-        const senhaCriptografada = await criptografarRSA(senhaClara, pemChavePublica);
-        document.getElementById('carga_criptografada').value = senhaCriptografada;
+        const criptografia = new JSEncrypt();
+        criptografia.setPublicKey(pemChavePublica);
+        const senhaCriptografada = criptografia.encrypt(senhaClara);
+        
+        if (!senhaCriptografada) {
+            throw new Error('Falha ao criptografar a senha.');
+        }
+
+        document.getElementById('dadosCriptografados').value = senhaCriptografada;
         
         const dados = {
-            carga_criptografada: senhaCriptografada
+            dadosCriptografados: senhaCriptografada
         };
 
         const resposta = await fetch('/main/php/processar_senha.php', {
@@ -35,8 +42,6 @@ document.getElementById('formularioAuditoriaSenha').addEventListener('submit', a
 
         if (resultadoJson.status === 'seguro') {
             divResultado.classList.add('resultado-seguro');
-        } else if (resultadoJson.status === 'perigo') {
-            divResultado.classList.add('resultado-perigo');
         } else {
             divResultado.classList.add('resultado-perigo');
         }
@@ -45,41 +50,6 @@ document.getElementById('formularioAuditoriaSenha').addEventListener('submit', a
 
     } catch (erro) {
         console.error("Erro de criptografia:", erro);
-        alert("Falha na camada de seguranca. Por favor, recarregue a pagina.");
+        alert("Falha na camada de segurança. Por favor, recarregue a página.");
     }
 });
-
-async function criptografarRSA(texto, pem) {
-    const conteudoPem = pem
-        .replace('-----BEGIN PUBLIC KEY-----', '')
-        .replace('-----END PUBLIC KEY-----', '')
-        .replace(/\s/g, '');
-    
-    const stringBinaria = window.atob(conteudoPem);
-    const bytesBinarios = new Uint8Array(stringBinaria.length);
-    for (let i = 0; i < stringBinaria.length; i++) {
-        bytesBinarios[i] = stringBinaria.charCodeAt(i);
-    }
-
-    const chavePublica = await window.crypto.subtle.importKey(
-        "spki",
-        bytesBinarios.buffer,
-        { name: "RSA-OAEP", hash: "SHA-1" },
-        true,
-        ["encrypt"]
-    );
-
-    const textoCodificado = new TextEncoder().encode(texto);
-    const bufferCriptografado = await window.crypto.subtle.encrypt(
-        { name: "RSA-OAEP" },
-        chavePublica,
-        textoCodificado
-    );
-
-    const bytesCriptografados = new Uint8Array(bufferCriptografado);
-    let resultadoBase64 = "";
-    for (let i = 0; i < bytesCriptografados.byteLength; i++) {
-        resultadoBase64 += String.fromCharCode(bytesCriptografados[i]);
-    }
-    return window.btoa(resultadoBase64);
-}
