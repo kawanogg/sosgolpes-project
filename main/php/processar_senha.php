@@ -35,7 +35,7 @@ $sucesso = openssl_private_decrypt(
 if (!$sucesso || empty($senha_clara)) {
     error_log("Falha ao descriptografar dados.");
     http_response_code(403);
-    die(json_encode(['status' => 'erro', 'mensagem' => 'Falha de seguranca: Os dados foram corrompidos ou adulterados.']));
+    die(json_encode(['status' => 'erro', 'mensagem' => 'Falha de seguranca.']));
 }
 
 $senha_clara_limpa = trim($senha_clara, " \t\n\r\0\x0B");
