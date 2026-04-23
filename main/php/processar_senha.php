@@ -1,16 +1,19 @@
 <?php
+
+require_once __DIR__ . '/../../database/database.php'; 
+
 header('Content-Type: application/json');
 
 $json_bruto = file_get_contents('php://input');
 $dados_recebidos = json_decode($json_bruto, true);
 
-if ($_SERVER['REQUEST_METHOD'] !== 'POST' || empty($dados_recebidos['carga_criptografada'])) {
+if ($_SERVER['REQUEST_METHOD'] !== 'POST' || empty($dados_recebidos['dadosCriptografados'])) {
     http_response_code(400);
     die(json_encode(['status' => 'erro', 'mensagem' => 'Requisicao invalida ou dados ausentes.']));
 }
 
-$carga_base64 = $dados_recebidos['carga_criptografada'];
-$dados_criptografados = base64_decode($carga_base64);
+$dados_b64 = $dados_recebidos['dadosCriptografados'];
+$dados_criptografados = base64_decode($dados_b64);
 
 $caminho_chave_privada = '/var/keys/private_key.pem';
 
@@ -26,8 +29,7 @@ $senha_clara = '';
 $sucesso = openssl_private_decrypt(
     $dados_criptografados, 
     $senha_clara, 
-    $chave_privada,
-    OPENSSL_PKCS1_OAEP_PADDING
+    $chave_privada
 );
 
 if (!$sucesso || empty($senha_clara)) {
@@ -40,8 +42,6 @@ $hash_pesquisa = hash('sha256', $senha_clara);
 
 $senha_clara = null;
 unset($senha_clara);
-
-require_once __DIR__ . '/../../database/database.php'; 
 
 try {
     $pdo = conectarBanco();
