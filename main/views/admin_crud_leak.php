@@ -148,7 +148,7 @@ if ($action === 'edit' && isset($_GET['id'])) {
     </main>
 
     <footer>
-        <p>&copy; 2024 SOS Golpes - Segurança e Privacidade para Web</p>
+        <p>&copy; 2026 SOS Golpes - Segurança e Privacidade para Web</p>
     </footer>
 </body>
 </html>
