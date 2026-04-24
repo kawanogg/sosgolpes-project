@@ -50,6 +50,12 @@ docker-compose down -v
 
 ## Proximos Passos
 
+### Fase 0: Modificar Stack
+
+- [ ] Python Backend
+- [ ] FastAPI
+- [ ] Microserviços
+
 ### Fase 1: Autenticacao Segura e 2FA
 
 - [ ] Paginas de Login e Registro
@@ -67,4 +73,7 @@ docker-compose down -v
 
 - [ ] Revisao de Prepared Statements (SQL Injection)
 - [ ] Verificacao de logs (nenhuma senha em texto claro)
-- [ ] Revisao final do DFD
+- [ ] Revisao do DFD
+- [ ] SAST
+- [ ] DAST
+- [ ] SCA
