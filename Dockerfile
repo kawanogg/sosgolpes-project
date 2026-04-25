@@ -15,7 +15,7 @@ WORKDIR /var/www/html
 COPY entrypoint.sh /usr/local/bin/entrypoint.sh
 RUN dos2unix /usr/local/bin/entrypoint.sh && chmod +x /usr/local/bin/entrypoint.sh
 
-COPY main/views/index.php /var/www/html/index.php
+COPY main/views/index.html /var/www/html/index.html
 
 RUN chown -R www-data:www-data /var/www/html
 
