@@ -14,13 +14,14 @@
                 <li><a href="link_analysis.html" class="ativo">Analisar Link</a></li>
                 <li><a href="password_checker.html">Auditoria de Senha</a></li>
                 <li><a href="history.html">Meu Historico</a></li>
+                <li><a href="admin_panel.html">Painel Admin</a></li>
             </ul>
         </div>
     </nav>
 
-    <main class="recipiente">
+    <div class="recipiente">
         <!-- SECAO 1: Analise de URL -->
-        <section class="secao-analise">
+        <div class="secao-analise">
             <div class="cabecalho-secao">
                 <h2>Analise de Links Suspeitos</h2>
             </div>
@@ -39,10 +40,10 @@
                     </button>
                 </form>
             </div>
-        </section>
+        </div>
 
         <!-- SECAO 2: QR Code -->
-        <section class="secao-qrcode" style="margin-top: 2rem;">
+        <div class="secao-qrcode" style="margin-top: 2rem;">
             <div class="cabecalho-secao">
                 <h2>Verificar QR Code</h2>
             </div>
@@ -68,7 +69,7 @@
                     Analisar URL do QR Code
                 </button>
             </div>
-        </section>
+        </div>
 
         <!-- SECAO 3: Resultado da analise -->
         <div id="painelResultado" class="oculto" style="margin-top: 2rem;">
@@ -102,7 +103,7 @@
                 <p class="subtexto-loading">Verificando heuristica, Google Safe Browsing, VirusTotal e redirecionamentos</p>
             </div>
         </div>
-    </main>
+    </div>
 
     <footer class="rodape">
         <div class="recipiente">
