@@ -26,11 +26,6 @@ jobs:
       - name: Executar Bandit
         run: bandit -r . -ll -x ./venv
 
-      - name: Comentar no PR com resultados do Bandit
-        if : github.event_name == 'pull_request'
-        uses: actions/github-script@v7
-        with:
-
   SnykSAST:
     name: Snyk Scan (SAST)
     runs-on: ubuntu-latest
