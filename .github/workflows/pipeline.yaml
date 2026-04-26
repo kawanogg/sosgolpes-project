@@ -38,7 +38,7 @@ jobs:
         uses: snyk/actions/setup@master
 
       - name: Snyk Code Scan (SAST)
-        run: snyk code test --org=bba8786a-5b1b-46db-9d63-382fb215ab7c
+        run: snyk code test --org=${{ secrets.SNYK_ORG }}
         env:
           SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
 
@@ -55,7 +55,7 @@ jobs:
           SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
         with:
           command: test
-          args: --file=requirements.txt
+          args: --file=requirements.txt --org=${{ secrets.SNYK_ORG }}
 
   build:
     name: Build & Push
