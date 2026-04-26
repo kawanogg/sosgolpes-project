@@ -30,3 +30,4 @@ jobs:
 
       - name: Deslogar do Docker Hub
         run: docker logout
+
