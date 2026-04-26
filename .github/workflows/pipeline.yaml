@@ -8,7 +8,7 @@ on:
 
 jobs:
   SAST:
-    name: Static Application Security Testing
+    name: Bandit Scan (SAST)
     runs-on: ubuntu-latest
 
     steps:
