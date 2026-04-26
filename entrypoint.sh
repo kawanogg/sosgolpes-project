@@ -10,4 +10,4 @@ if [ ! -f "$KEYS_DIR/private_key.pem" ]; then
     echo "Chaves RSA geradas com sucesso."
 fi
 
-exec uvicorn main:app --host 0.0.0.0 --port 8080 # uvicorn em prod.
+exec uvicorn main:app --host 0.0.0.0 --port 8080
