@@ -7,7 +7,7 @@ on:
     branches: [main]
 
 jobs:
-  SAST:
+  Bandit:
     name: Bandit Scan (SAST)
     runs-on: ubuntu-latest
 
@@ -26,9 +26,32 @@ jobs:
       - name: Executar Bandit
         run: bandit -r . -ll -x ./venv
 
+  Snyk:
+    name: Snyk Scan (SAST/SCA)
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Instalar dependências
+        run: pip install -r requirements.txt
+
+      - name: Snyk Code Scan (SAST)
+        uses: snyk/actions/python@0.4.0
+        env:
+          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+        with:
+          command: code test
+
+      - name: Snyk Open Source Scan (SCA)
+        uses: snyk/actions/python@0.4.0
+        env:
+          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+
   build:
     name: Build & Push
-    needs: SAST
+    needs: [Bandit, Snyk]
     runs-on: ubuntu-latest
 
     steps:
