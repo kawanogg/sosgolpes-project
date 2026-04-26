@@ -1,22 +1,21 @@
-FROM php:8.2-apache
+FROM python:3.11-slim
 
 RUN apt-get update && apt-get install -y \
-    libssl-dev \
-    libcurl4-openssl-dev \
     openssl \
     dos2unix \
-    && docker-php-ext-install pdo pdo_mysql curl \
+    gcc \
+    libffi-dev \
     && apt-get clean && rm -rf /var/lib/apt/lists/*
 
-RUN a2enmod rewrite
+WORKDIR /app
 
-WORKDIR /var/www/html
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
 
-COPY entrypoint.sh /usr/local/bin/entrypoint.sh
-RUN dos2unix /usr/local/bin/entrypoint.sh && chmod +x /usr/local/bin/entrypoint.sh
+COPY . /app
 
-COPY main/views/index.html /var/www/html/index.html
+RUN dos2unix /app/entrypoint.sh && chmod +x /app/entrypoint.sh
 
-RUN chown -R www-data:www-data /var/www/html
+EXPOSE 8080
 
-ENTRYPOINT ["/usr/local/bin/entrypoint.sh"]
+ENTRYPOINT ["/app/entrypoint.sh"]

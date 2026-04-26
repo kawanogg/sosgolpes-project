@@ -9,7 +9,7 @@ async function executarAnalise(url) {
     document.getElementById('painelResultado').classList.add('oculto');
 
     try {
-        const resp = await fetch('/main/php/analisar_link.php', {
+        const resp = await fetch('/api/analisar_link', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ url: url })

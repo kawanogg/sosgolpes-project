@@ -1,4 +1,4 @@
-fetch('/main/php/admin_stats.php')
+fetch('/api/admin_stats')
     .then(res => res.json())
     .then(data => {
         if(data.status === 'sucesso') {

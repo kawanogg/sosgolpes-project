@@ -1,5 +1,5 @@
 function carregarLista() {
-    fetch('/main/php/admin_crud.php')
+    fetch('/api/admin_crud')
         .then(res => res.json())
         .then(data => {
             const tbody = document.getElementById('tabela-leaks');
@@ -28,7 +28,7 @@ document.getElementById('formAddLeak').addEventListener('submit', function(e) {
         fonte: document.getElementById('fonte').value
     };
 
-    fetch('/main/php/admin_crud.php', {
+    fetch('/api/admin_crud', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload)
@@ -42,7 +42,7 @@ document.getElementById('formAddLeak').addEventListener('submit', function(e) {
 
 function deletarRegistro(id) {
     if(confirm('Tem certeza?')) {
-        fetch('/main/php/admin_crud.php', {
+        fetch('/api/admin_crud', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ action: 'delete', id: id })

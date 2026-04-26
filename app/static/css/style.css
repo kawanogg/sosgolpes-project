@@ -109,7 +109,7 @@ main {
     color: #1f2937;
 }
 
-.envoltorio-entrada {
+.container-entrada {
     position: relative;
     display: flex;
     align-items: center;

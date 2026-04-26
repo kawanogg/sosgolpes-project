@@ -3,10 +3,10 @@ services:
     build: .
     container_name: sos_golpes_web
     ports:
-      - "8080:80"
+      - "8080:8080"
     volumes:
-      - ./main:/var/www/html/main
-      - ./database:/var/www/html/database
+      - ./app:/var/www/html/app
+      - ./db:/var/www/html/database
     env_file:
       - .env
     depends_on:
@@ -22,7 +22,7 @@ services:
     ports:
       - "3306:3306"
     volumes:
-      - ./database/schema.sql:/docker-entrypoint-initdb.d/schema.sql
+      - ./db/schema.sql:/docker-entrypoint-initdb.d/schema.sql
       - db_data:/var/lib/mysql
     healthcheck:
       test: ["CMD-SHELL", "mysqladmin ping -h localhost -uroot -p$$MYSQL_ROOT_PASSWORD"]
