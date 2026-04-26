@@ -82,9 +82,9 @@ docker-compose down -v
 - [x] Revisao de Prepared Statements (SQL Injection)
 - [ ] Verificacao de logs (nenhuma senha em texto claro)
 - [ ] Revisao do DFD
-- [ ] SAST
+- [x] SAST
 - [ ] DAST
-- [ ] SCA
+- [x] SCA
 
 ### Fase 5: Erros
 - [ ] Revisar feedbacks para o usuário (mensagens de erro e etc).
