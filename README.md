@@ -30,11 +30,19 @@ docker-compose up -d
 
 ### 3. Acessar a aplicação
 
-- Auditoria de Senhas: http://localhost:8080/main/views/password_checker.html
-- Analise de Links: http://localhost:8080/main/views/link_analysis.html
-- Painel Administrativo: http://localhost:8080/main/views/admin_panel.php
+- Página Inicial: http://localhost:8080/
+- Auditoria de Senhas: http://localhost:8080/password_checker
+- Análise de Links: http://localhost:8080/link_analysis
+- Painel Administrativo: http://localhost:8080/admin_panel
 
-### 3. Parar os containers
+### 4. Estrutura do Projeto
+- /app/helpers: Lógicas (Criptografia e integração com APIs de análise).
+- /app/db: Configuração e conexão com o banco de dados.
+- /app/views: Arquivos HTML.
+- /app/static: Arquivos estáticos (CSS, JS, Imagens).
+- main.py: Ponto de entrada da aplicação.
+
+### 5. Parar os containers
 
 ```bash
 docker-compose down
@@ -52,8 +60,8 @@ docker-compose down -v
 
 ### Fase 0: Modificar Stack
 
-- [ ] Python Backend
-- [ ] FastAPI
+- [x] Migração PHP para Python
+- [x] FastAPI
 - [ ] Microserviços
 
 ### Fase 1: Autenticacao Segura e 2FA
@@ -71,9 +79,17 @@ docker-compose down -v
 
 ### Fase 4: Seguranca
 
-- [ ] Revisao de Prepared Statements (SQL Injection)
+- [x] Revisao de Prepared Statements (SQL Injection)
 - [ ] Verificacao de logs (nenhuma senha em texto claro)
 - [ ] Revisao do DFD
 - [ ] SAST
 - [ ] DAST
 - [ ] SCA
+
+### Fase 5: Erros
+- [ ] Revisar feedbacks para o usuário (mensagens de erro e etc).
+- Situação atual: O user nn ta sabendo o pq q deu erro... PAIA.
+
+---
+
+Made with ❤️ by OqQueVcMePedeSorrindoQueEuNaoFacoChorando&trade;
