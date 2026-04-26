@@ -6,12 +6,23 @@ function carregarLista() {
             tbody.innerHTML = '';
             data.forEach(reg => {
                 const tr = document.createElement('tr');
-                tr.innerHTML = `
-                    <td>${reg.id_leak}</td>
-                    <td>${reg.senha_vazada_hash.substring(0, 20)}...</td>
-                    <td>${reg.fonte_vazamento}</td>
-                    <td><button onclick="deletarRegistro(${reg.id_leak})">Deletar</button></td>
-                `;
+
+                const tdId = document.createElement('td');
+                tdId.textContent = reg.id_leak;
+
+                const tdHash = document.createElement('td');
+                tdHash.textContent = reg.senha_vazada_hash.substring(0, 20) + '...';
+
+                const tdFonte = document.createElement('td');
+                tdFonte.textContent = reg.fonte_vazamento;
+
+                const tdAcao = document.createElement('td');
+                const btn = document.createElement('button');
+                btn.textContent = 'Deletar';
+                btn.addEventListener('click', () => deletarRegistro(reg.id_leak));
+                tdAcao.appendChild(btn);
+
+                tr.append(tdId, tdHash, tdFonte, tdAcao);
                 tbody.appendChild(tr);
             });
         })

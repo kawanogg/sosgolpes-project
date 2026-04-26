@@ -10,7 +10,20 @@ fetch('/api/admin_stats')
             const tbody = document.getElementById('logs-tbody');
             data.logs.forEach(log => {
                 const tr = document.createElement('tr');
-                tr.innerHTML = `<td>${log.data_hora}</td><td>${log.nome || 'Anônimo'}</td><td>${log.acao_realizada}</td><td>${log.endereco_ip}</td>`;
+
+                const tdData = document.createElement('td');
+                tdData.textContent = log.data_hora;
+
+                const tdNome = document.createElement('td');
+                tdNome.textContent = log.nome || 'Anônimo';
+
+                const tdAcao = document.createElement('td');
+                tdAcao.textContent = log.acao_realizada;
+
+                const tdIp = document.createElement('td');
+                tdIp.textContent = log.endereco_ip;
+
+                tr.append(tdData, tdNome, tdAcao, tdIp);
                 tbody.appendChild(tr);
             });
         }
