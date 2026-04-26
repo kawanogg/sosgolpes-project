@@ -70,7 +70,7 @@ function mostrarResultado(dados) {
             '<div class="cabecalho-detalhe">' +
                 '<span style="color:' + statusCor + '; font-size:1.2rem;">' + (a.status === 'ok' ? '&#10003;' : '&#9888;') + '</span> ' +
                 '<strong>' + esc(a.nome) + '</strong>' +
-                '<span class="pontuacao-detalhe">+' + a.pontuacao + ' pts</span>' +
+                '<span class="pontuacao-detalhe">+' + esc(String(a.pontuacao)) + ' pts</span>' +
             '</div>' + alertasHtml;
 
         detalhes.appendChild(div);
