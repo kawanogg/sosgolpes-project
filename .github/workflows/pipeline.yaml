@@ -35,7 +35,7 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Setup Snyk
-        uses: snyk/actions/setup@v3
+        uses: snyk/actions/setup@master
 
       - name: Snyk Code Scan (SAST)
         run: snyk code test --org=bba8786a-5b1b-46db-9d63-382fb215ab7c
