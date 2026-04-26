@@ -1,6 +1,6 @@
 services:
   web:
-    image: APSDFOSDFOKASDKO
+    build: .
     container_name: sos_golpes_web
     ports:
       - "8080:8080"
