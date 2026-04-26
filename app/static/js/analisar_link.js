@@ -58,20 +58,36 @@ function mostrarResultado(dados) {
         const div = document.createElement('div');
         div.className = 'secao-detalhe';
 
-        let alertasHtml = '';
-        if (a.alertas) {
-            alertasHtml = '<ul class="lista-alertas">' +
-                a.alertas.map(t => '<li>' + esc(t) + '</li>').join('') +
-                '</ul>';
-        }
+        const cabecalho = document.createElement('div');
+        cabecalho.className = 'cabecalho-detalhe';
 
         const statusCor = a.status === 'ok' ? '#10b981' : '#f59e0b';
-        div.innerHTML =
-            '<div class="cabecalho-detalhe">' +
-                '<span style="color:' + statusCor + '; font-size:1.2rem;">' + (a.status === 'ok' ? '&#10003;' : '&#9888;') + '</span> ' +
-                '<strong>' + esc(a.nome) + '</strong>' +
-                '<span class="pontuacao-detalhe">+' + esc(String(a.pontuacao)) + ' pts</span>' +
-            '</div>' + alertasHtml;
+
+        const spanStatus = document.createElement('span');
+        spanStatus.style.color = statusCor;
+        spanStatus.style.fontSize = '1.2rem';
+        spanStatus.innerHTML = a.status === 'ok' ? '&#10003;' : '&#9888;';
+
+        const strong = document.createElement('strong');
+        strong.textContent = a.nome;
+
+        const spanPontuacao = document.createElement('span');
+        spanPontuacao.className = 'pontuacao-detalhe';
+        spanPontuacao.textContent = '+' + a.pontuacao + ' pts';
+
+        cabecalho.append(spanStatus, document.createTextNode(' '), strong, spanPontuacao);
+        div.appendChild(cabecalho);
+
+        if (a.alertas) {
+            const ul = document.createElement('ul');
+            ul.className = 'lista-alertas';
+            a.alertas.forEach(t => {
+                const li = document.createElement('li');
+                li.textContent = t;
+                ul.appendChild(li);
+            });
+            div.appendChild(ul);
+        }
 
         detalhes.appendChild(div);
     }
