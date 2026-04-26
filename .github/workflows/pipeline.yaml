@@ -34,32 +34,28 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Instalar dependências
-        run: pip install -r requirements.txt
+      - name: Setup Snyk
+        uses: snyk/actions/setup@v3
 
       - name: Snyk Code Scan (SAST)
-        uses: snyk/actions/python@0.4.0
+        run: snyk code test --org=bba8786a-5b1b-46db-9d63-382fb215ab7c
         env:
           SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
-        with:
-          command: code test
-          args: --org=bba8786a-5b1b-46db-9d63-382fb215ab7c
 
   SnykSCA:
     name: Snyk Scan (SCA)
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
-      - name: Instalar dependências
-        run: pip install -r requirements.txt
-
-      - name: Snyk Software Composition Analysis (SCA)
+      - name: Snyk SCA
         uses: snyk/actions/python@0.4.0
         env:
           SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+        with:
+          command: test
+          args: --file=requirements.txt
 
   build:
     name: Build & Push
