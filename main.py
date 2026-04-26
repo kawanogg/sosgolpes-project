@@ -9,7 +9,6 @@ from app.db.connect_db import get_db
 from app.helpers.crypto import descriptografar_e_gerar_hash
 from app.helpers.analise_links import (
     analisar_heuristica, 
-    analisar_redirecionamentos, 
     analisar_google_safe_browsing, 
     analisar_virus_total
 )
@@ -124,11 +123,10 @@ async def analisar_link(request: Request, db=Depends(get_db)):
         return {"status": "erro", "mensagem": "Dominio invalido."}
 
     heuristica = analisar_heuristica(url_crua, dominio, partes)
-    redirect = analisar_redirecionamentos(url_crua)
     gsb = analisar_google_safe_browsing(url_crua)
     vt = analisar_virus_total(url_crua)
 
-    pontuacao = heuristica['pontuacao'] + redirect['pontuacao'] + gsb['pontuacao'] + vt['pontuacao']
+    pontuacao = heuristica['pontuacao'] + gsb['pontuacao'] + vt['pontuacao']
     pontuacao = min(pontuacao, 100)
 
     if pontuacao >= 60:
@@ -158,7 +156,6 @@ async def analisar_link(request: Request, db=Depends(get_db)):
         'dominio': dominio,
         'analises': {
             'heuristica': heuristica,
-            'redirecionamentos': redirect,
             'google_safe_browsing': gsb,
             'virus_total': vt,
         },

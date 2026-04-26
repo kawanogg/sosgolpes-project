@@ -40,43 +40,6 @@ def analisar_heuristica(url: str, dominio: str, partes: urllib.parse.ParseResult
         'pontuacao': min(pontuacao, 40)
     }
 
-def analisar_redirecionamentos(url: str) -> dict:
-    alertas = []
-    pontuacao = 0
-    try:
-        resposta = requests.head(url, allow_redirects=True, timeout=10, verify=False)
-        num_redirects = len(resposta.history)
-        
-        if num_redirects > 3:
-            alertas.append(f"{num_redirects} redirecionamentos (possivel ofuscacao).")
-            pontuacao += 20
-        elif num_redirects > 0:
-            alertas.append(f"{num_redirects} redirecionamento(s).")
-        else:
-            alertas.append("Sem redirecionamentos.")
-
-        dom_ini = urllib.parse.urlparse(url).netloc
-        dom_fim = urllib.parse.urlparse(resposta.url).netloc
-
-        if dom_ini.lower() != dom_fim.lower():
-            alertas.append(f"Destino final em dominio diferente: {dom_fim}.")
-            pontuacao += 15
-
-    except requests.RequestException:
-        return {
-            'nome': 'Redirecionamentos',
-            'status': 'indisponivel',
-            'alertas': ['Nao foi possivel verificar redirecionamentos.'],
-            'pontuacao': 0
-        }
-
-    return {
-        'nome': 'Redirecionamentos',
-        'status': 'alerta' if pontuacao > 0 else 'ok',
-        'alertas': alertas,
-        'pontuacao': min(pontuacao, 30)
-    }
-
 def analisar_google_safe_browsing(url: str) -> dict:
     chave = os.getenv('GOOGLE_SAFE_BROWSING_KEY')
     if not chave:
