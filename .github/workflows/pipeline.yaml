@@ -42,6 +42,7 @@ jobs:
         env:
           SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
 
+
   SnykSCA:
     name: Snyk Scan (SCA)
     runs-on: ubuntu-latest
