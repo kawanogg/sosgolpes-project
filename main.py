@@ -52,6 +52,14 @@ def admin_crud():
 def admin_stats():
     return FileResponse("app/views/admin_stats.html")
 
+@app.get("/register")
+def register ():
+    return FileResponse("app/views/register.html")
+
+@app.get("/login")
+def login():
+    return FileResponse("app/views/login.html")
+
 # --- ROTAS DE API ---
 @app.get("/api/chave_publica")
 def get_public_key():
