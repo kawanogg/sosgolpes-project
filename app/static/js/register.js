@@ -12,7 +12,7 @@ document.getElementById('formularioCadastro').addEventListener('submit', async f
     }
 
     try {
-        const resp = await fetch('/main/php/register.php', {
+        const resp = await fetch('/api/registrar_usuario', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json'},
             body: JSON.stringify({
@@ -23,6 +23,6 @@ document.getElementById('formularioCadastro').addEventListener('submit', async f
         });
         const dados = await resp.json();
     } catch (err) {
-
+        alert('a')
     }
 })
