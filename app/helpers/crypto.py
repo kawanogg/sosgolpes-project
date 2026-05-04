@@ -1,6 +1,7 @@
 import base64
 import hashlib
 import os
+import bcrypt
 from fastapi import HTTPException
 from cryptography.hazmat.primitives import serialization
 from cryptography.hazmat.primitives.asymmetric import padding as crypto_padding
@@ -36,3 +37,10 @@ def descriptografar_e_gerar_hash(dados_b64: str) -> str:
     senha_clara = None 
     
     return hash_pesquisa
+
+def gerar_hash_senha(password: str):
+    b_pass = password.encode('utf-8')
+    salt = bcrypt.gensalt()
+
+    hashed_pass = bcrypt.hashpw(b_pass, salt)
+    return hashed_pass, salt

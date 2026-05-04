@@ -8,7 +8,10 @@ from fastapi.responses import FileResponse, PlainTextResponse
 import mysql.connector
 
 from app.db.connect_db import get_db
-from app.helpers.crypto import descriptografar_e_gerar_hash
+from app.helpers.crypto import (
+    descriptografar_e_gerar_hash,
+    gerar_hash_senha
+)
 from app.helpers.analise_links import (
     analisar_heuristica, 
     analisar_google_safe_browsing, 
@@ -183,7 +186,7 @@ async def registrar_usuario(request: Request, db=Depends(get_db)):
     
     email = dados_recebidos.get("email").strip()
     nome = dados_recebidos.get("nome").strip()
-    senha = dados_recebidos.get("senha").strip()
+    senha, salt = gerar_hash_senha(dados_recebidos.get("senha").strip())
     if not email or not nome or not senha:
         return {"status": "erro", "mensagem": "Dados cadastrais incompletos"}
     
@@ -192,11 +195,12 @@ async def registrar_usuario(request: Request, db=Depends(get_db)):
     try:
         cursor = db.cursor()
         cursor.execute(
-            "INSERT INTO Usuario (id_perfil, nome, email, senha_hash, criado_em) VALUES (2, %s, %s, %s, %s)",
-            (nome, email, senha, current_ts))
+            "INSERT INTO Usuario (id_perfil, nome, email, senha_hash, salt, criado_em) VALUES (2, %s, %s, %s, %s, %s)",
+            (nome, email, senha, salt, current_ts))
         db.commit()
     except Exception as err:
         return {"status": "erro", "mensagem": "Erro ao inserir no bd"}
+    
 
     
 
