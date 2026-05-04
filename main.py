@@ -194,13 +194,22 @@ async def registrar_usuario(request: Request, db=Depends(get_db)):
 
     try:
         cursor = db.cursor()
+
+        cursor.execute(
+            "SELECT * FROM Usuario WHERE email = %s",
+            [email]
+        )
+        resultado = cursor.fetchall()
+        if resultado:
+            return {"status": "info", "mensagem": "Usuário já existe"}
+
         cursor.execute(
             "INSERT INTO Usuario (id_perfil, nome, email, senha_hash, salt, criado_em) VALUES (2, %s, %s, %s, %s, %s)",
             (nome, email, senha, salt, current_ts))
         db.commit()
     except Exception as err:
-        return {"status": "erro", "mensagem": "Erro ao inserir no bd"}
-    
+        return {"status": "erro", "mensagem": "Erro ao se conectar ao banco de dados"}
+
 
     
 

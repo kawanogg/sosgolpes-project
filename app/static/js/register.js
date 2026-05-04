@@ -23,6 +23,6 @@ document.getElementById('formularioCadastro').addEventListener('submit', async f
         });
         const dados = await resp.json();
     } catch (err) {
-        alert('a')
+        alert("Erro ao cadastrar o usuário, tente novamente em alguns minutos")
     }
 })
