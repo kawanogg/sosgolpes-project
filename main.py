@@ -1,12 +1,17 @@
 import os
 import urllib
+import time
+from datetime import datetime
 from fastapi import FastAPI, Request, HTTPException, Depends
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse, PlainTextResponse
 import mysql.connector
 
 from app.db.connect_db import get_db
-from app.helpers.crypto import descriptografar_e_gerar_hash
+from app.helpers.crypto import (
+    descriptografar_e_gerar_hash,
+    gerar_hash_senha
+)
 from app.helpers.analise_links import (
     analisar_heuristica, 
     analisar_google_safe_browsing, 
@@ -51,6 +56,14 @@ def admin_crud():
 @app.get("/admin_stats")
 def admin_stats():
     return FileResponse("app/views/admin_stats.html")
+
+@app.get("/register")
+def register ():
+    return FileResponse("app/views/register.html")
+
+@app.get("/login")
+def login():
+    return FileResponse("app/views/login.html")
 
 # --- ROTAS DE API ---
 @app.get("/api/chave_publica")
@@ -163,6 +176,42 @@ async def analisar_link(request: Request, db=Depends(get_db)):
         'nivel_perigo': nivel,
         'resumo': resumo,
     }
+
+@app.post("/api/registrar_usuario")
+async def registrar_usuario(request: Request, db=Depends(get_db)):
+    try:
+        dados_recebidos = await request.json()
+    except Exception:
+        raise HTTPException(status_code=400, detail="Corpo da requisicao invalido.")
+    
+    email = dados_recebidos.get("email").strip()
+    nome = dados_recebidos.get("nome").strip()
+    senha, salt = gerar_hash_senha(dados_recebidos.get("senha").strip())
+    if not email or not nome or not senha:
+        return {"status": "erro", "mensagem": "Dados cadastrais incompletos"}
+    
+    current_ts = datetime.now()
+
+    try:
+        cursor = db.cursor()
+
+        cursor.execute(
+            "SELECT * FROM Usuario WHERE email = %s",
+            [email]
+        )
+        resultado = cursor.fetchall()
+        if resultado:
+            return {"status": "info", "mensagem": "Usuário já existe"}
+
+        cursor.execute(
+            "INSERT INTO Usuario (id_perfil, nome, email, senha_hash, salt, criado_em) VALUES (2, %s, %s, %s, %s, %s)",
+            (nome, email, senha, salt, current_ts))
+        db.commit()
+    except Exception as err:
+        return {"status": "erro", "mensagem": "Erro ao se conectar ao banco de dados"}
+
+
+    
 
 # --- ROTAS DE ADMIN ---
 @app.get("/api/admin_crud")

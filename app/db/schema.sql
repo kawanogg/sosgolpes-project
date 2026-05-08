@@ -12,6 +12,7 @@ CREATE TABLE Usuario (
     nome VARCHAR(100) NOT NULL,
     email VARCHAR(150) NOT NULL UNIQUE,
     senha_hash VARCHAR(255) NOT NULL,
+    salt VARCHAR(255) NOT NULL,
     token_2fa_secret VARCHAR(100) DEFAULT NULL,
     criado_em TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (id_perfil) REFERENCES Perfil(id_perfil)

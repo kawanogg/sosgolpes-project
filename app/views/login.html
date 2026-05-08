@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - SOS Golpes</title>
+    <link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body>
+    <nav class="barra-navegacao">
+        <div class="recipiente conteudo-navegacao">
+            <h1 class="logotipo">SOS<span>Golpes</span></h1>
+            <ul class="links-navegacao">
+                <li><a href="link_analysis.html" class="ativo">Analisar Link</a></li>
+                <li><a href="password_checker.html">Auditoria de Senha</a></li>
+                <li><a href="history.html">Meu Historico</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <main class="recipiente">
+        <section class="secao-login">
+            <div class="cabecalho-secao">
+                <h2>Login</h2>
+            </div>
+
+            <div class="cartao cartao-formulario">
+                <form id="formularioLogin">
+                    <div class="grupo-formulario">
+                        <label for="usernameInput">Usuário:</label>
+                        <div class="envoltorio-entrada">
+                            <input type="text" id="usernameInput" name="username" placeholder="Nome de Usuário" required>
+                        </div>
+                        <label for="passwordInput">Senha:</label>
+                        <div class="envoltorio-entrada">
+                            <input type="password" id="passwordInput" name="password" placeholder="Senha" required>
+                        </div>
+                    </div>
+
+                    <button type="submit" id="btnLogin" class="botao botao-primario">
+                        Fazer login
+                    </button>
+                </form>
+            </div>
+        </section>
+    </main>
+
+    <footer class="rodape">
+        <div class="recipiente">
+            <p>&copy; 2026 SOS Golpes. Projeto de Utilidade Social.</p>
+        </div>
+    </footer>
+
+    <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
+    <script src="/static/js/login.js"></script>
+</body>
+</html>
