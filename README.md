@@ -58,11 +58,13 @@ docker-compose down -v
 
 ## Proximos Passos
 
-### Fase 0: Modificar Stack
+### Fase 0: Funcionais
 
-- [x] Migração PHP para Python
-- [x] FastAPI
-- [ ] Microserviços
+- [ ] Validação de QR Codes
+- [ ] Estatísticas de Tipo de Ameaça
+- [ ] Edição de Perfil do Usuário
+- [ ] Consultas a Pesquisas Anteriores
+- [ ] Alertas de Riscos
 
 ### Fase 1: Autenticacao Segura e 2FA
 
@@ -77,7 +79,7 @@ docker-compose down -v
 - [x] CRUD da tabela Registro_Leak
 - [x] Visualizacao de estatisticas e Log_Acesso
 
-### Fase 4: Seguranca
+### Fase 3: Seguranca
 
 - [x] Revisao de Prepared Statements (SQL Injection)
 - [ ] Verificacao de logs (nenhuma senha em texto claro)
@@ -85,8 +87,9 @@ docker-compose down -v
 - [x] SAST
 - [ ] DAST
 - [x] SCA
+- [ ]
 
-### Fase 5: Erros
+### Fase 4: Erros
 - [ ] Revisar feedbacks para o usuário (mensagens de erro e etc).
 - Situação atual: O user nn ta sabendo o pq q deu erro... PAIA.
 
