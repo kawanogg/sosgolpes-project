@@ -6,6 +6,10 @@ document.getElementById('formularioCadastro').addEventListener('submit', async f
     const senha = document.getElementById('passwordInput').value.trim();
     const confirma_senha = document.getElementById('confirmPasswordInput').value.trim();
 
+    if(email && nome && senha && confirma_senha) await registraUsuario(email, nome, senha, confirma_senha);
+})
+
+async function registraUsuario(email, nome, senha, confirma_senha) {
     if (senha != confirma_senha) {
         alert('Senhas não batem');
         return;
@@ -25,4 +29,4 @@ document.getElementById('formularioCadastro').addEventListener('submit', async f
     } catch (err) {
         alert("Erro ao cadastrar o usuário, tente novamente em alguns minutos")
     }
-})
+}

@@ -201,7 +201,7 @@ async def registrar_usuario(request: Request, db=Depends(get_db)):
         )
         resultado = cursor.fetchall()
         if resultado:
-            return {"status": "info", "mensagem": "Usuário já existe"}
+            return {"status": "info", "mensagem": "Tentariva de criação de usuário já existente"}
 
         cursor.execute(
             "INSERT INTO Usuario (id_perfil, nome, email, senha_hash, salt, criado_em) VALUES (2, %s, %s, %s, %s, %s)",
