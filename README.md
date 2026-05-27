@@ -60,34 +60,34 @@ docker-compose down -v
 
 ### Fase 0: Funcionais
 
-- [ ] Validação de QR Codes
-- [ ] Estatísticas de Tipo de Ameaça
+- [x] Validação de QR Codes
+- [ ] Estatísticas de Tipo de Ameaça *(Parcial: Painel geral pronto, falta agregar dados por ameaça)*
 - [ ] Edição de Perfil do Usuário
-- [ ] Consultas a Pesquisas Anteriores
+- [ ] Consultas a Pesquisas Anteriores *(tem o botao Meu Histórico, mas é dummy kkkkk)*
 - [ ] Alertas de Riscos
+- [ ] Denúncia de links e golpes
 
 ### Fase 1: Autenticacao Segura e 2FA
 
-- [ ] Paginas de Login e Registro
-- [ ] Autenticacao com hashes BCRYPT
-- [ ] Duplo fator de autenticacao (TOTP)
-- [ ] Controle de sessao com RBAC (Administrador / Cidadao)
+- [ ] Páginas de Login e Registro *(falta lógica completa do back)*
+- [x] Autenticacao com hashes BCRYPT
+- [ ] Duplo fator de autenticacao (TOTP)  *(falta o fluxo no login)*
+- [ ] Controle de sessao com RBAC (Administrador / Cidadao) *(falta colocar uns middlewares nas rotas da API para restringir acessos)*
 
 ### Fase 2: Painel do Administrador
 
 - [x] Interface do Painel Administrativo
-- [x] CRUD da tabela Registro_Leak
-- [x] Visualizacao de estatisticas e Log_Acesso
+- [ ] CRUD da tabela Registro_Leak *(falta operações de atualizar e editar registros existentes)*
+- [x] Visualizacao de estatisticas gerais e Log_Acesso
 
 ### Fase 3: Seguranca
 
-- [x] Revisao de Prepared Statements (SQL Injection)
-- [ ] Verificacao de logs (nenhuma senha em texto claro)
+- [ ] Revisao de Prepared Statements (SQL Injection)
+- [x] Verificacao de logs (nenhuma senha em texto claro)
 - [ ] Revisao do DFD
 - [x] SAST
 - [ ] DAST
 - [x] SCA
-- [ ]
 
 ### Fase 4: Erros
 - [ ] Revisar feedbacks para o usuário (mensagens de erro e etc).
