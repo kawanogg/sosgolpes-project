@@ -1,12 +1,24 @@
 services:
-  web:
-    build: .
-    container_name: sos_golpes_web
+  frontend:
+    build: ./frontend
+    container_name: sos_golpes_frontend
+    ports:
+      - "3000"
+    env_file:
+      - .env
+
+  api-gateway:
+    build: ./api-gateway
+    container_name: sos_golpes_gateway
     ports:
       - "8080:8080"
-    volumes:
-      - ./app:/var/www/html/app
-      - ./db:/var/www/html/database
+    env_file:
+      - .env
+
+
+  identity-service:
+    build: ./services/identity
+    container_name: sos_golpes_identity
     env_file:
       - .env
     depends_on:

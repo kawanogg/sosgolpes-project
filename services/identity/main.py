@@ -7,12 +7,12 @@ from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse, PlainTextResponse
 import mysql.connector
 
-from app.db.connect_db import get_db
-from app.helpers.crypto import (
+from db.connect_db import get_db
+from helpers.crypto import (
     descriptografar_e_gerar_hash,
     gerar_hash_senha
 )
-from app.helpers.analise_links import (
+from helpers.analise_links import (
     analisar_heuristica, 
     analisar_google_safe_browsing, 
     analisar_virus_total
@@ -315,5 +315,3 @@ async def obter_estatisticas(db=Depends(get_db)):
     except Exception as e:
         print(f"Erro ao obter estatisticas: {e}")
         return {"status": "erro", "mensagem": "Falha interna ao recolher as estatisticas."}
-    
-app.mount("/static", StaticFiles(directory="app/static"), name="static")
