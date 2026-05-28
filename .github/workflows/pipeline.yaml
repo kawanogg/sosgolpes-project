@@ -60,7 +60,7 @@ jobs:
 
   SemgrepSAST:
     name: Semgrep Scan (SAST)
-    runs-on: self-hosted
+    runs-on: ubuntu-latest
     container:
       image: semgrep/semgrep
     steps:
