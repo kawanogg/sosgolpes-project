@@ -58,45 +58,60 @@ docker-compose down -v
 
 ## Proximos Passos
 
-### Fase 0: Funcionais
+### Fase 0: Requisitos Funcionais
 
-- [x] Validação de QR Codes
-- [ ] Estatísticas de Tipo de Ameaça *(Parcial: Painel geral pronto, falta agregar dados por ameaça)*
-- [ ] Edição de Perfil do Usuário
-- [ ] Consultas a Pesquisas Anteriores *(tem o botao Meu Histórico, mas é dummy kkkkk)*
+- [x] Validacao de QR Codes
+- [ ] Estatisticas de Tipo de Ameaca *(painel geral pronto, falta agregar dados por ameaca)*
+- [ ] Edicao de Perfil do Usuario
+- [ ] Historico de pesquisas anteriores *(tem o botao "Meu Historico", mas eh dummy :\))*
 - [ ] Alertas de Riscos
-- [ ] Denúncia de links e golpes
+- [ ] Denuncia de links e golpes
 
-### Fase 1: Autenticacao Segura e 2FA
+### Fase 1: Autenticacao e Controle de Acesso
 
-- [ ] Páginas de Login e Registro *(falta lógica completa do back)*
-- [x] Autenticacao com hashes BCRYPT
-- [ ] Duplo fator de autenticacao (TOTP)  *(falta o fluxo no login)*
-- [ ] Controle de sessao com RBAC (Administrador / Cidadao) *(falta colocar uns middlewares nas rotas da API para restringir acessos)*
+- [ ] Login com Amazon Cognito
+- [x] Registro de usuario com hash BCRYPT
+- [ ] Duplo fator de autenticacao — TOTP *(falta fluxo completo no login)*
+- [ ] Middleware RBAC nas rotas da API (Administrador / Cidadao)
+- [ ] Controle de sessao (JWT)
 
 ### Fase 2: Painel do Administrador
 
 - [x] Interface do Painel Administrativo
-- [ ] CRUD da tabela Registro_Leak *(falta operações de atualizar e editar registros existentes)*
+- [ ] CRUD completo da tabela Registro_Leak *(falta update/edit de registros)*
 - [x] Visualizacao de estatisticas gerais e Log_Acesso
 
-### Fase 3: Seguranca
+### Fase 3: Seguranca de Aplicacao (AppSec)
 
 - [ ] Revisao de Prepared Statements (SQL Injection)
 - [x] Verificacao de logs (nenhuma senha em texto claro)
-- [ ] Revisao do DFD
-- [x] SAST
-- [ ] DAST
-- [x] SCA
+- [x] SAST (Bandit + Snyk Code)
+- [ ] DAST (OWASP ZAP)
+- [x] SCA (Snyk)
 
-### Fase 4: Erros
-- [ ] Revisar feedbacks para o usuário (mensagens de erro e etc).
-- Situação atual: O user nn ta sabendo o pq q deu erro... PAIA.
-- [ ] Monitoramento e Telemetria.
+### Fase 4: Seguranca de Infraestrutura
 
-### Arquitetura
-- [ ] Kubernetes
-- [ ] Microsserviços
+- [ ] Politica de seguranca de Pods
+- [ ] Criptografia para Kubernetes Secrets (encryption at rest)
+
+### Fase 5: Experiencia do Usuario e Monitoramento
+
+- [ ] Feedbacks de erro para o usuario *(hj o user nao sabe o que deu errado)*
+- [ ] Monitoramento e Telemetria
+
+### Fase 6: Pipeline CI/CD (completo)
+
+- [x] CI (SAST + SCA + Build)
+- [ ] CD (deploy automatizado para producao no K8s)
+
+### Fase 7: Arquitetura e Infraestrutura
+
+- [ ] Migrar de monolito para microservicos (front, back, features tudo em microservico)
+- [ ] Comunicacao REST entre microservicos
+- [ ] Deployments (nao Pods estaticos)
+- [ ] Services para interconexao entre componentes
+- [ ] Disponibilidade/redundancia
+- [ ] Dockerfiles separados por microservico
 
 ---
 
