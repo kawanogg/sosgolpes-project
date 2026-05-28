@@ -58,9 +58,20 @@ jobs:
           command: test
           args: --file=requirements.txt --org=${{ secrets.SNYK_ORG }}
 
+  SemgrepSAST:
+    name: Semgrep Scan (SAST)
+    runs-on: self-hosted
+    container:
+      image: semgrep/semgrep
+    steps:
+      - uses: actions/checkout@v6
+      - run: semgrep ci
+        env:
+          SEMGREP_APP_TOKEN: ${{ secrets.SEMGREP_APP_TOKEN }}
+
   build:
     name: Build & Push
-    needs: [Bandit, SnykSAST, SnykSCA]
+    needs: [Bandit, SnykSAST, SnykSCA, SemgrepSAST]
     runs-on: ubuntu-latest
 
     steps:
