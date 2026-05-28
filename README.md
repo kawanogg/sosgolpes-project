@@ -92,6 +92,11 @@ docker-compose down -v
 ### Fase 4: Erros
 - [ ] Revisar feedbacks para o usuário (mensagens de erro e etc).
 - Situação atual: O user nn ta sabendo o pq q deu erro... PAIA.
+- [ ] Monitoramento e Telemetria.
+
+### Arquitetura
+- [ ] Kubernetes
+- [ ] Microsserviços
 
 ---
 
