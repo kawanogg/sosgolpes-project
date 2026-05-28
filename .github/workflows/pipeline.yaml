@@ -109,13 +109,14 @@ jobs:
 
       - name: Subir aplicação
         run: |
-          docker run -d -p 5000:5000 --name sos-golpes sos-golpes:latest
+          docker run -d --network=host \
+            --name sos-golpes sos-golpes:latest
           sleep 10
 
       - name: OWASP ZAP Scan
         uses: zaproxy/action-baseline@v0.15.0
         with:
-          target: "http://localhost:5000"
+          target: "http://localhost:8080"
 
   push:
     name: Push to Docker Hub
