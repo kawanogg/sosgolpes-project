@@ -70,7 +70,7 @@ jobs:
           SEMGREP_APP_TOKEN: ${{ secrets.SEMGREP_APP_TOKEN }}
 
   build:
-    name: Build & Push
+    name: Build
     needs: [Bandit, SnykSAST, SnykSCA, SemgrepSAST]
     runs-on: ubuntu-latest
 
@@ -78,23 +78,19 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Login no Docker Hub
-        uses: docker/login-action@v3
-        with:
-          username: ${{ secrets.DOCKER_USERNAME }}
-          password: ${{ secrets.DOCKER_PASSWORD }}
-      
-      - name: Criacao da imagem e push para o Docker Hub
-        uses: docker/build-push-action@v5
-        with:
-          context: .
-          push: true
-          tags: ${{ secrets.DOCKER_USERNAME }}/sos-golpes:latest
+      - name: Build da imagem
+        run: docker build -t sos-golpes:latest .
 
-      - name: Deslogar do Docker Hub
-        run: docker logout
+      - name: Salvar imagem como artefato
+        run: docker save sos-golpes:latest -o sos-golpes.tar
 
-  DAST:
+      - name: Upload do artefato
+        uses: actions/upload-artifact@v4
+        with:
+          name: docker-image
+          path: sos-golpes.tar
+
+  ZapDAST:
     name: OWASP ZAP (DAST)
     needs: build
     runs-on: ubuntu-latest
@@ -103,18 +99,48 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Login no Docker Hub
-        uses: docker/login-action@v3
+      - name: Download do artefato
+        uses: actions/download-artifact@v4
         with:
-          username: ${{ secrets.DOCKER_USERNAME }}
-          password: ${{ secrets.DOCKER_PASSWORD }}
+          name: docker-image
+
+      - name: Carregar imagem
+        run: docker load -i sos-golpes.tar
 
       - name: Subir aplicação
         run: |
-          docker run -d -p 5000:5000 --name sos-golpes ${{ secrets.DOCKER_USERNAME }}/sos-golpes:latest
+          docker run -d -p 5000:5000 --name sos-golpes sos-golpes:latest
           sleep 10
 
       - name: OWASP ZAP Scan
         uses: zaproxy/action-baseline@v0.15.0
         with:
           target: "http://localhost:5000"
+
+  push:
+    name: Push to Docker Hub
+    needs: ZapDAST
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Download do artefato
+        uses: actions/download-artifact@v4
+        with:
+          name: docker-image
+
+      - name: Carregar imagem
+        run: docker load -i sos-golpes.tar
+
+      - name: Login no Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+
+      - name: Tag e push para o Docker Hub
+        run: |
+          docker tag sos-golpes:latest ${{ secrets.DOCKER_USERNAME }}/sos-golpes:latest
+          docker push ${{ secrets.DOCKER_USERNAME }}/sos-golpes:latest
+
+      - name: Deslogar do Docker Hub
+        run: docker logout
