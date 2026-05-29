@@ -94,21 +94,24 @@ jobs:
     needs: [Bandit, SnykSAST, SnykSCA, SemgrepSAST]
     runs-on: ubuntu-latest
 
+    matrix:
+      service: [services/admin, services/audit, services/identity, services/threat, services/user]
+
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Build da imagem
-        run: docker build -t sos-golpes:latest .
+      - name: Build da imagem (${{ matrix.service }})
+        run: docker build -t sos-golpes-${{ matrix.service }}:latest ./${{ matrix.service }}
 
       - name: Salvar imagem como artefato
-        run: docker save sos-golpes:latest -o sos-golpes.tar
+        run: docker save sos-golpes-${{ matrix.service }}:latest -o sos-golpes-${{ matrix.service }}.tar
 
       - name: Upload do artefato
         uses: actions/upload-artifact@v4
         with:
-          name: docker-image
-          path: sos-golpes.tar
+          name: docker-image-${{ matrix.service }}
+          path: sos-golpes-${{ matrix.service}}.tar
 
   ZapDAST:
     name: OWASP ZAP (DAST)
