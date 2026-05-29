@@ -20,51 +20,6 @@ from helpers.analise_links import (
 
 app = FastAPI()
 
-def get_db():
-    db = mysql.connector.connect(
-        host='db',
-        database='sos_golpes',
-        user='root',
-        password=os.getenv('MYSQL_ROOT_PASSWORD')
-    )
-    try:
-        yield db
-    finally:
-        db.close()
-
-# --- ROTAS DE VIEWS ---
-@app.get("/")
-def home():
-    return FileResponse("app/views/index.html")
-
-@app.get("/link_analysis")
-def link_analysis():
-    return FileResponse("app/views/link_analysis.html")
-
-@app.get("/password_checker")
-def password_checker():
-    return FileResponse("app/views/password_checker.html")
-
-@app.get("/admin_panel")
-def admin_panel():
-    return FileResponse("app/views/admin_panel.html")
-
-@app.get("/admin_crud")
-def admin_crud():
-    return FileResponse("app/views/admin_crud.html")
-
-@app.get("/admin_stats")
-def admin_stats():
-    return FileResponse("app/views/admin_stats.html")
-
-@app.get("/register")
-def register ():
-    return FileResponse("app/views/register.html")
-
-@app.get("/login")
-def login():
-    return FileResponse("app/views/login.html")
-
 # --- ROTAS DE API ---
 @app.get("/api/chave_publica")
 def get_public_key():
@@ -177,7 +132,7 @@ async def analisar_link(request: Request, db=Depends(get_db)):
         'resumo': resumo,
     }
 
-@app.post("/api/registrar_usuario")
+@app.post("/api/auth/registrar_usuario")
 async def registrar_usuario(request: Request, db=Depends(get_db)):
     try:
         dados_recebidos = await request.json()

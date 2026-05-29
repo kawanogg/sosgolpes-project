@@ -12,7 +12,7 @@ document.getElementById('formularioCadastro').addEventListener('submit', async f
     }
 
     try {
-        const resp = await fetch('/api/registrar_usuario', {
+        const resp = await fetch('/api/auth/registrar_usuario', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json'},
             body: JSON.stringify({
