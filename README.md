@@ -1,6 +1,6 @@
 # SOS Golpes
 
-Plataforma web desenvolvida em PHP focada na capacitacao do cidadao contra ataques de engenharia social (Phishing, Quishing e Vazamento de Credenciais).
+Plataforma web desenvolvida em Python focada na capacitacao do cidadao contra ataques de engenharia social (Phishing, Quishing e Vazamento de Credenciais).
 
 ## Como Executar
 
