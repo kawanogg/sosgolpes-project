@@ -56,7 +56,7 @@ jobs:
           SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
         with:
           command: test
-          args: --file=requirements.txt --org=${{ secrets.SNYK_ORG }}
+          args: --all-projects --org=${{ secrets.SNYK_ORG }}
 
   SemgrepSAST:
     name: Semgrep Scan (SAST)
