@@ -46,17 +46,37 @@ jobs:
   SnykSCA:
     name: Snyk Scan (SCA)
     runs-on: ubuntu-latest
-
+    strategy:
+      matrix:
+        service:
+          - services/admin
+          - services/audit
+          - services/identity
+          - services/threat
+          - services/user
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout código
+        uses: actions/checkout@v4
+      
+      - name: Configurar Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
 
+      - name: Instalar Snyk CLI
+        uses: snyk/actions/setup@master
+      
+      - name: Instalar dependências do Microserviço
+        run: |
+          pip install -r ${{ matrix.service }}/requirements.txt
+      
       - name: Snyk SCA
-        uses: snyk/actions/python@0.4.0
         env:
           SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
-        with:
-          command: test
-          args: --all-projects --org=${{ secrets.SNYK_ORG }}
+        run: |
+          snyk test --file=${{ matrix.service }}/requirements.txt \
+                    --package-manager=pip \
+                    --org=${{ secrets.SNYK_ORG }}
 
   SemgrepSAST:
     name: Semgrep Scan (SAST)
