@@ -1,4 +1,4 @@
-fetch('/api/admin_stats')
+fetch('/api/admin/admin_stats')
     .then(res => res.json())
     .then(data => {
         if(data.status === 'sucesso') {

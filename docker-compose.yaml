@@ -15,10 +15,45 @@ services:
     env_file:
       - .env
 
-
   identity-service:
     build: ./services/identity
     container_name: sos_golpes_identity
+    env_file:
+      - .env
+    depends_on:
+      db:
+        condition: service_healthy
+
+  user-service:
+    build: ./services/user
+    container_name: sos_golpes_user
+    env_file:
+      - .env
+    depends_on:
+      db:
+        condition: service_healthy
+    
+  threat-service:
+    build: ./services/threat
+    container_name: sos_golpes_threat
+    env_file:
+      - .env
+    depends_on:
+      db:
+        condition: service_healthy
+  
+  admin-service:
+    build: ./services/admin
+    container_name: sos_golpes_admin
+    env_file:
+      - .env
+    depends_on:
+      db:
+        condition: service_healthy
+  
+  audit-service:
+    build: ./services/audit
+    container_name: sos_golpes_audit
     env_file:
       - .env
     depends_on:
@@ -34,7 +69,7 @@ services:
     ports:
       - "3306:3306"
     volumes:
-      - ./db/schema.sql:/docker-entrypoint-initdb.d/schema.sql
+      - ./db/init-microservices.sql:/docker-entrypoint-initdb.d/schema.sql
       - db_data:/var/lib/mysql
     healthcheck:
       test: ["CMD-SHELL", "mysqladmin ping -h localhost -uroot -p$$MYSQL_ROOT_PASSWORD"]
