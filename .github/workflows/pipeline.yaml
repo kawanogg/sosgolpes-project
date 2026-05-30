@@ -48,12 +48,8 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        service:
-          - services/admin
-          - services/audit
-          - services/identity
-          - services/threat
-          - services/user
+        service: [admin, audit, identity, threat, user]
+
     steps:
       - name: Checkout código
         uses: actions/checkout@v4
@@ -68,13 +64,13 @@ jobs:
       
       - name: Instalar dependências do Microserviço
         run: |
-          pip install -r ${{ matrix.service }}/requirements.txt
+          pip install -r services/${{ matrix.service }}/requirements.txt
       
       - name: Snyk SCA
         env:
           SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
         run: |
-          snyk test --file=${{ matrix.service }}/requirements.txt \
+          snyk test --file=services/${{ matrix.service }}/requirements.txt \
                     --package-manager=pip \
                     --org=${{ secrets.SNYK_ORG }}
 
@@ -117,6 +113,9 @@ jobs:
     name: OWASP ZAP (DAST)
     needs: build
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        service: [admin, audit, identity, threat, user]
 
     steps:
       - name: Checkout
@@ -125,15 +124,15 @@ jobs:
       - name: Download do artefato
         uses: actions/download-artifact@v4
         with:
-          name: docker-image
+          name: docker-image-${{ matrix.service }}
 
       - name: Carregar imagem
-        run: docker load -i sos-golpes.tar
+        run: docker load -i sos-golpes-${{ matrix.service }}.tar
 
       - name: Subir aplicação
         run: |
           docker run -d --network=host \
-            --name sos-golpes sos-golpes:latest
+            --name sos-golpes-${{ matrix.service }} sos-golpes-${{ matrix.service }}:latest
           sleep 10
 
       - name: OWASP ZAP Scan
@@ -146,6 +145,9 @@ jobs:
     name: Push to Docker Hub
     needs: ZapDAST
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        service: [admin, audit, identity, threat, user]
 
     steps:
       - name: Download do artefato
@@ -154,7 +156,7 @@ jobs:
           name: docker-image
 
       - name: Carregar imagem
-        run: docker load -i sos-golpes.tar
+        run: docker load -i sos-golpes-${{ matrix.service }}.tar
 
       - name: Login no Docker Hub
         uses: docker/login-action@v3
@@ -164,8 +166,8 @@ jobs:
 
       - name: Tag e push para o Docker Hub
         run: |
-          docker tag sos-golpes:latest ${{ secrets.DOCKER_USERNAME }}/sos-golpes:latest
-          docker push ${{ secrets.DOCKER_USERNAME }}/sos-golpes:latest
+          docker tag sos-golpes-${{ matrix.service }}:latest ${{ secrets.DOCKER_USERNAME }}/sos-golpes-${{ matrix.service }}:latest
+          docker push ${{ secrets.DOCKER_USERNAME }}/sos-golpes-${{ matrix.service }}:latest
 
       - name: Deslogar do Docker Hub
         run: docker logout
