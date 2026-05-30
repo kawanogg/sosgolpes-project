@@ -141,6 +141,7 @@ jobs:
           target: "http://localhost:8000/openapi.json"
           format: "openapi"
           allow_issue_writing: false
+          artifact_name: zap_scan${{ matrix.service }}
 
   push:
     name: Push to Docker Hub
