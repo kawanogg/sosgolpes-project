@@ -43,8 +43,8 @@ jobs:
           SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
 
 
-  SnykSCA:
-    name: Snyk Scan (SCA)
+  SnykSCA-matrix:
+    name: Snyk Scan (SCA) Matrix
     runs-on: ubuntu-latest
     strategy:
       matrix:
@@ -74,6 +74,13 @@ jobs:
                     --package-manager=pip \
                     --org=${{ secrets.SNYK_ORG }}
 
+  SnykSCA:
+    name: Snyk Scan (SCA)
+    needs: SnykSCA-matrix
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo "Todos os services passaram com sucesso (Snyk SCA)"
+
   SemgrepSAST:
     name: Semgrep Scan (SAST)
     runs-on: ubuntu-latest
@@ -85,8 +92,8 @@ jobs:
         env:
           SEMGREP_APP_TOKEN: ${{ secrets.SEMGREP_APP_TOKEN }}
 
-  build:
-    name: Build
+  build-matrix:
+    name: Build Matrix
     needs: [Bandit, SnykSAST, SnykSCA, SemgrepSAST]
     runs-on: ubuntu-latest
     strategy:
@@ -108,9 +115,16 @@ jobs:
         with:
           name: docker-image-${{ matrix.service }}
           path: sos-golpes-${{ matrix.service}}.tar
+  
+  build:
+    name: Build
+    needs: build-matrix
+    runs-on: ubuntu-latest
+    steps:
+      - run: "Todos os builds da matriz passaram com sucesso"
 
-  ZapDAST:
-    name: OWASP ZAP (DAST)
+  ZapDAST-matrix:
+    name: OWASP ZAP (DAST) Matrix
     needs: build
     runs-on: ubuntu-latest
     strategy:
@@ -142,15 +156,21 @@ jobs:
           format: "openapi"
           allow_issue_writing: false
           artifact_name: 'zap_scan_${{ matrix.service }}'
+    
+  ZapDAST:
+    name: OWASP ZAP (DAST)
+    needs: ZapDAST-matrix
+    runs-on:ubuntu-latest
+    steps:
+      - run: echo "Todos os services passaram com sucesso (OWASP ZAP)"
 
-  push:
-    name: Push to Docker Hub
+  push-matrix:
+    name: Push Matrix
     needs: ZapDAST
     runs-on: ubuntu-latest
     strategy:
       matrix:
         service: [admin, audit, identity, threat, user]
-
     steps:
       - name: Download do artefato
         uses: actions/download-artifact@v4
@@ -173,3 +193,10 @@ jobs:
 
       - name: Deslogar do Docker Hub
         run: docker logout
+  
+  push:
+    name: Push to Docker Hub
+    needs: push-matrix
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo "Todos os pushs para o Docker Hub da matriz passaram com sucesso"
