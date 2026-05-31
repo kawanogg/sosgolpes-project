@@ -121,7 +121,7 @@ jobs:
     needs: build-matrix
     runs-on: ubuntu-latest
     steps:
-      - run: "Todos os builds da matriz passaram com sucesso"
+      - run: echo "Todos os builds da matriz passaram com sucesso"
 
   ZapDAST-matrix:
     name: OWASP ZAP (DAST) Matrix
