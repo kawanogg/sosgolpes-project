@@ -160,7 +160,7 @@ jobs:
   ZapDAST:
     name: OWASP ZAP (DAST)
     needs: ZapDAST-matrix
-    runs-on:ubuntu-latest
+    runs-on: ubuntu-latest
     steps:
       - run: echo "Todos os services passaram com sucesso (OWASP ZAP)"
 
