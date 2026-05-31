@@ -43,20 +43,43 @@ jobs:
           SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
 
 
-  SnykSCA:
-    name: Snyk Scan (SCA)
+  SnykSCA-matrix:
+    name: Snyk Scan (SCA) Matrix
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        service: [admin, audit, identity, threat, user]
 
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout código
+        uses: actions/checkout@v4
+      
+      - name: Configurar Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
 
+      - name: Instalar Snyk CLI
+        uses: snyk/actions/setup@master
+      
+      - name: Instalar dependências do Microserviço
+        run: |
+          pip install -r services/${{ matrix.service }}/requirements.txt
+      
       - name: Snyk SCA
-        uses: snyk/actions/python@0.4.0
         env:
           SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
-        with:
-          command: test
-          args: --all-projects --org=${{ secrets.SNYK_ORG }}
+        run: |
+          snyk test --file=services/${{ matrix.service }}/requirements.txt \
+                    --package-manager=pip \
+                    --org=${{ secrets.SNYK_ORG }}
+
+  SnykSCA:
+    name: Snyk Scan (SCA)
+    needs: SnykSCA-matrix
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo "Todos os services passaram com sucesso (Snyk SCA)"
 
   SemgrepSAST:
     name: Semgrep Scan (SAST)
@@ -69,31 +92,44 @@ jobs:
         env:
           SEMGREP_APP_TOKEN: ${{ secrets.SEMGREP_APP_TOKEN }}
 
-  build:
-    name: Build
+  build-matrix:
+    name: Build Matrix
     needs: [Bandit, SnykSAST, SnykSCA, SemgrepSAST]
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        service: [admin, audit, identity, threat, user]
 
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Build da imagem
-        run: docker build -t sos-golpes:latest .
+      - name: Build da imagem (${{ matrix.service }})
+        run: docker build -t sos-golpes-${{ matrix.service }}:latest ./services/${{ matrix.service }}
 
       - name: Salvar imagem como artefato
-        run: docker save sos-golpes:latest -o sos-golpes.tar
+        run: docker save sos-golpes-${{ matrix.service }}:latest -o sos-golpes-${{ matrix.service }}.tar
 
       - name: Upload do artefato
         uses: actions/upload-artifact@v4
         with:
-          name: docker-image
-          path: sos-golpes.tar
+          name: docker-image-${{ matrix.service }}
+          path: sos-golpes-${{ matrix.service}}.tar
+  
+  build:
+    name: Build
+    needs: build-matrix
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo "Todos os builds da matriz passaram com sucesso"
 
-  ZapDAST:
-    name: OWASP ZAP (DAST)
+  ZapDAST-matrix:
+    name: OWASP ZAP (DAST) Matrix
     needs: build
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        service: [admin, audit, identity, threat, user]
 
     steps:
       - name: Checkout
@@ -102,36 +138,47 @@ jobs:
       - name: Download do artefato
         uses: actions/download-artifact@v4
         with:
-          name: docker-image
+          name: docker-image-${{ matrix.service }}
 
       - name: Carregar imagem
-        run: docker load -i sos-golpes.tar
+        run: docker load -i sos-golpes-${{ matrix.service }}.tar
 
       - name: Subir aplicação
         run: |
-          docker run -d --network=host \
-            --name sos-golpes sos-golpes:latest
-          sleep 10
+          docker run -d -p 8000:8000 --network=host \
+            --name sos-golpes-${{ matrix.service }} sos-golpes-${{ matrix.service }}:latest
+          sleep 15
 
-      - name: OWASP ZAP Scan
-        uses: zaproxy/action-baseline@v0.15.0
+      - name: OWASP ZAP API Scan
+        uses: zaproxy/action-api-scan@v0.10.0
         with:
-          target: "http://localhost:8080"
+          target: "http://localhost:8000/openapi.json"
+          format: "openapi"
           allow_issue_writing: false
+          artifact_name: 'zap_scan_${{ matrix.service }}'
+    
+  ZapDAST:
+    name: OWASP ZAP (DAST)
+    needs: ZapDAST-matrix
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo "Todos os services passaram com sucesso (OWASP ZAP)"
 
-  push:
-    name: Push to Docker Hub
+  push-matrix:
+    name: Push Matrix
     needs: ZapDAST
     runs-on: ubuntu-latest
-
+    strategy:
+      matrix:
+        service: [admin, audit, identity, threat, user]
     steps:
       - name: Download do artefato
         uses: actions/download-artifact@v4
         with:
-          name: docker-image
+          name: docker-image-${{ matrix.service }}
 
       - name: Carregar imagem
-        run: docker load -i sos-golpes.tar
+        run: docker load -i sos-golpes-${{ matrix.service }}.tar
 
       - name: Login no Docker Hub
         uses: docker/login-action@v3
@@ -141,8 +188,15 @@ jobs:
 
       - name: Tag e push para o Docker Hub
         run: |
-          docker tag sos-golpes:latest ${{ secrets.DOCKER_USERNAME }}/sos-golpes:latest
-          docker push ${{ secrets.DOCKER_USERNAME }}/sos-golpes:latest
+          docker tag sos-golpes-${{ matrix.service }}:latest ${{ secrets.DOCKER_USERNAME }}/sos-golpes-${{ matrix.service }}:latest
+          docker push ${{ secrets.DOCKER_USERNAME }}/sos-golpes-${{ matrix.service }}:latest
 
       - name: Deslogar do Docker Hub
         run: docker logout
+  
+  push:
+    name: Push to Docker Hub
+    needs: push-matrix
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo "Todos os pushs para o Docker Hub da matriz passaram com sucesso"

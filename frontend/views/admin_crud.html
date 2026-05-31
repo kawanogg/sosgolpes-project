@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <title>CRUD Vazamentos - SOS Golpes</title>
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+    <h1>Gerenciar Vazamentos de Senhas</h1>
+    <nav><a href="/admin_panel">Painel Admin</a></nav>
+
+    <h2>Adicionar Registro</h2>
+    <form id="formAddLeak">
+        <label>Hash da Senha (SHA-256):</label>
+        <input type="text" id="senha_hash" required>
+        <label>Fonte do Vazamento:</label>
+        <input type="text" id="fonte" required>
+        <button type="submit">Adicionar</button>
+    </form>
+    <div id="mensagem"></div>
+
+    <h2>Registros de Vazamentos</h2>
+    <table>
+        <thead><tr><th>ID</th><th>Hash da Senha</th><th>Fonte</th><th>Ações</th></tr></thead>
+        <tbody id="tabela-leaks">
+        </tbody>
+    </table>
+    <script src="/js/admin_crud.js"></script>
+</body>
+</html>

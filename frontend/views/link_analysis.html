@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Analise de Links - SOS Golpes</title>
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+    <nav class="barra-navegacao">
+        <div class="recipiente conteudo-navegacao">
+            <h1 class="logotipo">SOS<span>Golpes</span></h1>
+            <ul class="links-navegacao">
+                <li><a href="/link_analysis" class="ativo">Analisar Link</a></li>
+                <li><a href="/password_checker">Auditoria de Senha</a></li>
+                <li><a href="/admin_panel">Painel Admin</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <div class="recipiente">
+        <!-- SECAO 1: Analise de URL -->
+        <div class="secao-analise">
+            <div class="cabecalho-secao">
+                <h2>Analise de Links Suspeitos</h2>
+            </div>
+
+            <div class="cartao cartao-formulario">
+                <form id="formularioAnaliseLink">
+                    <div class="grupo-formulario">
+                        <label for="urlInput">URL para analise:</label>
+                        <div class="container-entrada">
+                            <input type="text" id="urlInput" name="url" placeholder="Ex: https://exemplo.com" required autocomplete="url">
+                        </div>
+                    </div>
+
+                    <button type="submit" id="btnAnalisar" class="botao botao-primario">
+                        Analisar Link
+                    </button>
+                </form>
+            </div>
+        </div>
+
+        <!-- SECAO 2: QR Code -->
+        <div class="secao-qrcode" style="margin-top: 2rem;">
+            <div class="cabecalho-secao">
+                <h2>Verificar QR Code</h2>
+            </div>
+
+            <div class="cartao cartao-formulario">
+                <div class="grupo-formulario">
+                    <label for="qrFileInput">Selecione a imagem do QR Code:</label>
+                    <div class="area-upload" id="areaUpload">
+                        <p class="texto-upload">Clique ou arraste uma imagem aqui</p>
+                        <p class="subtexto-upload">PNG, JPG ou GIF</p>
+                        <input type="file" id="qrFileInput" accept="image/*" class="input-arquivo-oculto">
+                    </div>
+                </div>
+
+                <div id="previewQR" class="preview-qr oculto">
+                    <img id="imgPreview" src="" alt="Preview do QR Code">
+                </div>
+
+                <div id="resultadoQR" class="caixa-resultado oculto"></div>
+
+                <button type="button" id="btnAnalisarQR" class="botao botao-primario oculto" style="margin-top: 1rem;">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+                    Analisar URL do QR Code
+                </button>
+            </div>
+        </div>
+
+        <!-- SECAO 3: Resultado da analise -->
+        <div id="painelResultado" class="oculto" style="margin-top: 2rem;">
+            <div class="cartao">
+                <div id="cabecalhoResultado" class="cabecalho-resultado">
+                    <div id="iconeNivel" class="icone-nivel"></div>
+                    <div>
+                        <h3 id="tituloNivel"></h3>
+                        <p id="resumoAnalise"></p>
+                    </div>
+                </div>
+
+                <div id="barraRisco" class="barra-risco-container">
+                    <div class="barra-risco-label">
+                        <span>Pontuacao de Risco</span>
+                        <span id="valorRisco">0</span>
+                    </div>
+                    <div class="barra-risco-fundo">
+                        <div id="barraRiscoPreenchimento" class="barra-risco-preenchimento"></div>
+                    </div>
+                </div>
+
+                <div id="detalhesAnalise" class="detalhes-analise"></div>
+            </div>
+        </div>
+
+        <div id="loadingOverlay" class="loading-overlay oculto">
+            <div class="loading-conteudo">
+                <div class="spinner"></div>
+                <p>Analisando URL...</p>
+                <p class="subtexto-loading">Verificando heuristica, Google Safe Browsing e VirusTotal</p>
+            </div>
+        </div>
+    </div>
+
+    <footer class="rodape">
+        <div class="recipiente">
+            <p>&copy; 2026 SOS Golpes. Projeto de Utilidade Social.</p>
+        </div>
+    </footer>
+
+    <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
+    <script src="/js/analisar_link.js"></script>
+</body>
+</html>

@@ -1,0 +1,28 @@
+document.getElementById('formularioCadastro').addEventListener('submit', async function(e) {
+    e.preventDefault();
+
+    const email = document.getElementById('emailInput').value.trim();
+    const nome = document.getElementById('nameInput').value.trim();
+    const senha = document.getElementById('passwordInput').value.trim();
+    const confirma_senha = document.getElementById('confirmPasswordInput').value.trim();
+
+    if (senha != confirma_senha) {
+        alert('Senhas não batem');
+        return;
+    }
+
+    try {
+        const resp = await fetch('/api/auth/registrar_usuario', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json'},
+            body: JSON.stringify({
+                email: email,
+                nome: nome,
+                senha: senha
+            })
+        });
+        const dados = await resp.json();
+    } catch (err) {
+        alert("Erro ao cadastrar o usuário, tente novamente em alguns minutos")
+    }
+})

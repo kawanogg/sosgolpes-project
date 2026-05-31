@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <title>Estatísticas e Logs - SOS Golpes</title>
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+    <h1>Estatísticas e Logs de Acesso</h1>
+    <nav>
+        <a href="/admin_panel">Painel Admin</a>
+    </nav>
+
+    <h2>Estatísticas Gerais</h2>
+    <div class="stats-grid">
+        <div class="stat-card"><h3>Total de Usuários</h3><p id="stat-usuarios">...</p></div>
+        <div class="stat-card"><h3>Análises de Links</h3><p id="stat-analises">...</p></div>
+        <div class="stat-card"><h3>Registros de Vazamento</h3><p id="stat-leaks">...</p></div>
+        <div class="stat-card"><h3>Logs de Acesso</h3><p id="stat-logs">...</p></div>
+    </div>
+
+    <h2>Logs de Acesso Recentes</h2>
+    <table>
+        <thead><tr><th>Data/Hora</th><th>Usuário</th><th>Ação</th><th>IP</th></tr></thead>
+        <tbody id="logs-tbody">
+            </tbody>
+    </table>
+    <script src="/js/admin_stats.js"></script>
+</body>
+</html>
