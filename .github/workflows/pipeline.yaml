@@ -155,7 +155,7 @@ jobs:
       - name: Download do artefato
         uses: actions/download-artifact@v4
         with:
-          name: docker-image
+          name: docker-image-${{ matrix.service }}
 
       - name: Carregar imagem
         run: docker load -i sos-golpes-${{ matrix.service }}.tar
