@@ -78,7 +78,7 @@ docker-compose down -v
 ### Fase 2: Painel do Administrador
 
 - [x] Interface do Painel Administrativo
-- [ ] CRUD completo da tabela Registro_Leak *(falta update/edit de registros)*
+- [x] CRUD completo da tabela Registro_Leak *(update/edit de registros implementado)*
 - [x] Visualizacao de estatisticas gerais e Log_Acesso
 
 ### Fase 3: Seguranca de Aplicacao (AppSec)

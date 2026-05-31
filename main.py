@@ -254,6 +254,28 @@ async def gerenciar_leaks(request: Request, db=Depends(get_db)):
             cursor.execute("DELETE FROM Registro_Leak WHERE id_leak = %s", (id_leak,))
             db.commit()
             return {"status": "sucesso", "mensagem": "Registro deletado!"}
+
+        elif acao == "edit":
+            id_leak = dados.get("id")
+            senha_hash = dados.get("senha_hash", "")
+            fonte = dados.get("fonte", "")
+
+            if not id_leak:
+                return {"status": "erro", "mensagem": "ID do registro ausente."}
+
+            cursor.execute(
+                "SELECT id_leak FROM Registro_Leak WHERE senha_vazada_hash = %s AND id_leak != %s",
+                (senha_hash, id_leak)
+            )
+            if cursor.fetchone():
+                return {"status": "erro", "mensagem": "Outro registro já usa este hash de senha."}
+
+            cursor.execute(
+                "UPDATE Registro_Leak SET senha_vazada_hash = %s, fonte_vazamento = %s WHERE id_leak = %s",
+                (senha_hash, fonte, id_leak)
+            )
+            db.commit()
+            return {"status": "sucesso", "mensagem": "Registro atualizado!"}
             
         else:
             return {"status": "erro", "mensagem": "Acao invalida!"}
