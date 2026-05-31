@@ -9,13 +9,15 @@
     <h1>Gerenciar Vazamentos de Senhas</h1>
     <nav><a href="/admin_panel">Painel Admin</a></nav>
 
-    <h2>Adicionar Registro</h2>
+    <h2 id="formTitulo">Adicionar Registro</h2>
     <form id="formAddLeak">
+        <input type="hidden" id="id_leak">
         <label>Hash da Senha (SHA-256):</label>
         <input type="text" id="senha_hash" required>
         <label>Fonte do Vazamento:</label>
         <input type="text" id="fonte" required>
-        <button type="submit">Adicionar</button>
+        <button type="submit" id="btnSubmit">Adicionar</button>
+        <button type="button" id="btnCancelEdit" style="display:none; margin-left: 8px;">Cancelar edição</button>
     </form>
     <div id="mensagem"></div>
 

@@ -1,73 +1,94 @@
 import os
-import urllib
-import time
-from datetime import datetime
 from fastapi import FastAPI, Request, HTTPException, Depends
-from fastapi.staticfiles import StaticFiles
-from fastapi.responses import FileResponse, PlainTextResponse
+from pydantic import BaseModel
 import mysql.connector
 
 from db.connect_db import get_db
 
 app = FastAPI()
 
-@app.get("/api/admin/admin_crud")
+class LeakCreate(BaseModel):
+    senha_hash: str
+    fonte: str
+
+@app.get("/api/admin/leaks")
 async def listar_leaks(db=Depends(get_db)):
     cursor = db.cursor(dictionary=True)
     cursor.execute("SELECT * FROM Registro_Leak ORDER BY id_leak DESC")
-    resultados = cursor.fetchall()
-    return resultados
+    return cursor.fetchall()
 
-@app.post("/api/admin/admin_crud")
-async def gerenciar_leaks(request: Request, db=Depends(get_db)):
-    try:
-        dados = await request.json()
-    except Exception:
-        raise HTTPException(status_code=400, detail="Corpo da requisicao invalido.")
+@app.get("/api/admin/leaks/{id_leak}")
+async def obter_leak(id_leak: int, db=Depends(get_db)):
+    cursor = db.cursor(dictionary=True)
+    cursor.execute("SELECT * FROM Registro_Leak WHERE id_leak = %s", (id_leak,))
+    resultado = cursor.fetchone()
+    if not resultado:
+        raise HTTPException(status_code=404, detail="Registro nao encontrado.")
+    return resultado
 
-    acao = dados.get("action", "")
+@app.post("/api/admin/leaks")
+async def criar_leak(leak: LeakCreate, db=Depends(get_db)):
+    if not leak.senha_hash or not leak.fonte:
+        raise HTTPException(status_code=400, detail="Campos 'senha_hash' e 'fonte' sao obrigatorios.")
+
     cursor = db.cursor()
-
     try:
-        if acao == "add":
-            senha_hash = dados.get("senha_hash", "")
-            fonte = dados.get("fonte", "")
-            
-            # O SELECT continua aqui como primeira linha de defesa
-            cursor.execute("SELECT id_leak FROM Registro_Leak WHERE senha_vazada_hash = %s", (senha_hash,))
-            if cursor.fetchone():
-                return {"status": "erro", "mensagem": "Este hash de senha já está registrado na base."}
-            
-            # Se passar, tenta inserir
-            cursor.execute(
-                "INSERT INTO Registro_Leak (senha_vazada_hash, fonte_vazamento) VALUES (%s, %s)",
-                (senha_hash, fonte)
-            )
-            db.commit()
-            return {"status": "sucesso", "mensagem": "Registro adicionado!"}
-            
-        elif acao == "delete":
-            id_leak = dados.get("id")
-            cursor.execute("DELETE FROM Registro_Leak WHERE id_leak = %s", (id_leak,))
-            db.commit()
-            return {"status": "sucesso", "mensagem": "Registro deletado!"}
-            
-        else:
-            return {"status": "erro", "mensagem": "Acao invalida!"}
+        cursor.execute("SELECT id_leak FROM Registro_Leak WHERE senha_vazada_hash = %s", (leak.senha_hash,))
+        if cursor.fetchone():
+            raise HTTPException(status_code=409, detail="Este hash de senha ja esta registrado na base.")
+
+        cursor.execute(
+            "INSERT INTO Registro_Leak (senha_vazada_hash, fonte_vazamento) VALUES (%s, %s)",
+            (leak.senha_hash, leak.fonte)
+        )
+        db.commit()
+        return {"status": "sucesso", "mensagem": "Registro adicionado!", "id": cursor.lastrowid}
 
     except mysql.connector.Error as err:
         db.rollback()
-        if err.errno == 1062: 
-            print("Tentativa de registro duplicado bloqueada.")
-            return {"status": "erro", "mensagem": "Este hash de senha já existe."}
-        else:
-            print(f"Erro de Banco de Dados: {err}")
-            raise HTTPException(status_code=500, detail="Falha interna no banco de dados.")
-            
-    except Exception as e:
-        print(f"Erro no servidor: {e}")
+        if err.errno == 1062:
+            raise HTTPException(status_code=409, detail="Este hash de senha ja existe.")
+        raise HTTPException(status_code=500, detail="Falha interna no banco de dados.")
+
+@app.put("/api/admin/leaks/{id_leak}")
+async def atualizar_leak(id_leak: int, leak: LeakCreate, db=Depends(get_db)):
+    if not leak.senha_hash or not leak.fonte:
+        raise HTTPException(status_code=400, detail="Campos 'senha_hash' e 'fonte' sao obrigatorios.")
+
+    cursor = db.cursor()
+    try:
+        cursor.execute("SELECT id_leak FROM Registro_Leak WHERE id_leak = %s", (id_leak,))
+        if not cursor.fetchone():
+            raise HTTPException(status_code=404, detail="Registro nao encontrado.")
+
+        cursor.execute(
+            "SELECT id_leak FROM Registro_Leak WHERE senha_vazada_hash = %s AND id_leak != %s",
+            (leak.senha_hash, id_leak)
+        )
+        if cursor.fetchone():
+            raise HTTPException(status_code=409, detail="Outro registro ja usa este hash de senha.")
+
+        cursor.execute(
+            "UPDATE Registro_Leak SET senha_vazada_hash = %s, fonte_vazamento = %s WHERE id_leak = %s",
+            (leak.senha_hash, leak.fonte, id_leak)
+        )
+        db.commit()
+        return {"status": "sucesso", "mensagem": "Registro atualizado!"}
+
+    except mysql.connector.Error as err:
         db.rollback()
-        raise HTTPException(status_code=500, detail="Erro interno do servidor.")
+        if err.errno == 1062:
+            raise HTTPException(status_code=409, detail="Este hash de senha ja existe.")
+        raise HTTPException(status_code=500, detail="Falha interna no banco de dados.")
+
+@app.delete("/api/admin/leaks/{id_leak}")
+async def deletar_leak(id_leak: int, db=Depends(get_db)):
+    cursor = db.cursor()
+    cursor.execute("DELETE FROM Registro_Leak WHERE id_leak = %s", (id_leak,))
+    if cursor.rowcount == 0:
+        raise HTTPException(status_code=404, detail="Registro nao encontrado.")
+    db.commit()
+    return {"status": "sucesso", "mensagem": "Registro deletado!"}
 
 @app.get("/api/admin/admin_stats")
 async def obter_estatisticas(db=Depends(get_db)):
