@@ -6,3 +6,5 @@ sqlalchemy
 cryptography
 requests
 bcrypt
+boto3
+python-jose[cryptography]
