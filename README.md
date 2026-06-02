@@ -1,5 +1,8 @@
 # SOS Golpes
 
+**Importante**: o foco desse projeto **não** é o desenvolvimento das features de análise ou torná-las extremamente detalhadas. A ideia aqui é trabalhar com princípios de DevSecOps, Kubernetes, microserviços e segurança no geral. 
+Além disso, uma boa prática de segurança (e.g. criptografia em trânsito) pode não ser observada em todos os locais onde faria sentido se ter essa boa prática, mas pode ter sido implementada 1 única vez para fins de PoC e atendimento de requisitos breves, os quais foram estipulados antes da implementação desse projeto.
+
 Plataforma web desenvolvida em Python focada na capacitacao do cidadao contra ataques de engenharia social (Phishing, Quishing e Vazamento de Credenciais).
 
 ## Como Executar
