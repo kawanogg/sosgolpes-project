@@ -125,7 +125,7 @@ async def login(request: Request, response: Response):
             key="access_token",
             value=resultado_auth['AccessToken'],
             httponly=True,
-            secure=False,
+            secure=True,
             samesite="lax",
             max_age=resultado_auth['ExpiresIn']
         )
@@ -134,7 +134,7 @@ async def login(request: Request, response: Response):
             key="refresh_token",
             value=resultado_auth['RefreshToken'],
             httponly=True,
-            secure=False,
+            secure=True,
             samesite="lax",
             max_age=5*24*60*60
         )

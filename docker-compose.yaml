@@ -12,6 +12,7 @@ services:
     container_name: sos_golpes_gateway
     ports:
       - "8080:8080"
+      - "443:8443"
     env_file:
       - .env
 
