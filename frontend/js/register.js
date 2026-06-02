@@ -1,3 +1,11 @@
+document.addEventListener('DOMContentLoaded', () => {
+    const token = localStorage.getItem('access_token');
+
+    if (token) {
+        window.location.href = "http://localhost:8080/"
+    }
+});
+
 document.getElementById('formularioCadastro').addEventListener('submit', async function(e) {
     e.preventDefault();
 
@@ -11,18 +19,27 @@ document.getElementById('formularioCadastro').addEventListener('submit', async f
         return;
     }
 
-    try {
-        const resp = await fetch('/api/auth/registrar_usuario', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json'},
-            body: JSON.stringify({
-                email: email,
-                nome: nome,
-                senha: senha
-            })
-        });
-        const dados = await resp.json();
-    } catch (err) {
-        alert("Erro ao cadastrar o usuário, tente novamente em alguns minutos")
-    }
+    if (email && nome && senha && confirma_senha) registrar_usuario(email, nome, senha);
+    
 })
+
+async function registrar_usuario(email, nome, senha) {
+    try {
+            const resp = await fetch('/api/auth/registrar_usuario', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json'},
+                body: JSON.stringify({
+                    email: email,
+                    nome: nome,
+                    senha: senha
+                })
+            });
+            const dados = await resp.json();
+
+            if (dados.status === 'sucesso') {
+                window.location.href = "http://localhost:8080/login"
+            } else if (dados.status === 'erro') {
+                alert(dados.mensagem)
+            }
+        } catch (err) { alert("Erro ao cadastrar o usuário, tente novamente em alguns minutos"); }
+}

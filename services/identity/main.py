@@ -14,7 +14,10 @@ from helpers.crypto import (
     descriptografar_e_gerar_hash,
     gerar_hash_senha
 )
-from helpers.auth import calcular_secret_hash
+from helpers.auth import (
+    calcular_secret_hash,
+    validar_token_jwt
+)
 
 cognito_client = boto3.client('cognito-idp', region_name='us-east-2')
 USER_POOL_ID = os.getenv('COGNITO_USER_POOL_ID')
@@ -90,10 +93,67 @@ async def registrar_usuario(request: Request, db=Depends(get_db)):
             "INSERT INTO Usuario (id_perfil, nome, email, criado_em) VALUES (2, %s, %s, %s)",
             (nome, email, current_ts))
         db.commit()
+        return {"status": "sucesso", "mensagem": "Cadastro realizado com sucesso"}
     except Exception as err:
         return {"status": "erro", "mensagem": "Erro ao se conectar ao banco de dados"}
 
 
-    
+@app.post("/api/auth/login")
+async def login(request: Request):
+    try:
+        dados = await request.json()
+        email = dados.get("email").strip()
+        senha = dados.get("senha").strip()
 
-# --- ROTAS DE ADMIN ---
+        if not email or not senha:
+            raise HTTPException(status_code=400, detail="E-mail e senha são obrigatórios.")
+        
+        response = cognito_client.admin_initiate_auth(
+            UserPoolId=USER_POOL_ID,
+            ClientId=CLIENT_ID,
+            AuthFlow='ADMIN_NO_SRP_AUTH',
+            AuthParameters={
+                'USERNAME': email,
+                'PASSWORD': senha,
+                'SECRET_HASH': calcular_secret_hash(email)
+            }
+        )
+
+        resultado_auth = response['AuthenticationResult']
+
+        return {
+            "status": "sucesso",
+            "mensagem": "Login realizado com sucesso",
+            "tokens": {
+                "access_token": resultado_auth['AccessToken'],
+                "id_token": resultado_auth['IdToken'],
+                "refresh_token": resultado_auth['RefreshToken'],
+                "token_type": "Bearer",
+                "expires_in": resultado_auth['ExpiresIn']
+            }
+        }
+    except ClientError as e:
+        codigo_erro = e.response['Error']['Code']
+
+        if codigo_erro == 'NotAuthorizedException':
+            raise HTTPException(status_code=401, detail="E-mail ou senha incorretos.")
+        elif codigo_erro == 'UserNotFoundException':
+            raise HTTPException(status_code=401, detail="E-mail ou senha incorretos.")
+        elif codigo_erro == 'UserNotConfirmedException':
+            raise HTTPException(status_code=403, detail="A conta ainda não foi confirmada.")
+        else:
+            raise HTTPException(status_code=500, detail=f"Erro interno de autenticação: {e.response['Error']['Message']}")
+
+@app.post("/api/auth/logout")
+async def logout(usuario: dict = Depends(validar_token_jwt)):
+    try:
+        username = usuario.get("username")
+
+        cognito_client.admin_user_global_sign_out(
+            UserPoolId=USER_POOL_ID,
+            Username=username
+        )
+
+        return {"status": "sucesso", "mensagem": "Sessão encerrada com segurança no servidor."}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail="Erro ao processar logout no servidor.")
