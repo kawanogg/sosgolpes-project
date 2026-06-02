@@ -24,11 +24,16 @@ document.addEventListener('DOMContentLoaded', async function() {
             const dados = await response.json();
             
             if (dados.status === "sucesso") {
-                let user_info_html = `
-                    <p><strong>Nome:</strong> ${dados.nome}</p>
-                    <p><strong>Email:</strong> ${dados.email}</p>
-                `;
-                perfil.innerHTML += user_info_html;
+                const pNome = document.createElement("p");
+                pNome.innerHTML = "<strong>Nome: </strong>";
+                pNome.appendChild(document.createTextNode(dados.nome));
+
+                const pEmail = document.createElement("p");
+                pEmail.innerHTML = "<strong>Email: </strong>";
+                pEmail.appendChild(document.createTextNode(dados.email));
+
+                perfil.appendChild(pNome);
+                perfil.appendChild(pEmail);
             } else {
                 alert("Erro ao carregar o perfil do usuário.");
             }
