@@ -1,8 +1,8 @@
-document.addEventListener('DOMContentLoaded', () => {
-    const token = localStorage.getItem('access_token');
+document.addEventListener('DOMContentLoaded', function() {
+    const isLoggedIn = localStorage.getItem('is_logged_in');
 
-    if (token) {
-        window.location.href = "http://localhost:8080/"
+    if (isLoggedIn === 'true') {
+        window.location.href = "/"
     }
 });
 
@@ -29,10 +29,10 @@ async function login(email, senha) {
         const dados = await resp.json();
 
         if (resp.ok && dados.status === 'sucesso') {
-            localStorage.setItem('access_token', dados.tokens.access_token);
-            localStorage.setItem('id_token', dados.tokens.id_token);
-
-            window.location.href = "http://localhost:8080/"
+            localStorage.setItem('is_logged_in', 'true');
+            window.location.href = "/"
+        } else {
+            alert("Erro ao fazer login, verifique suas credenciais");
         }
 
     } catch (err) {

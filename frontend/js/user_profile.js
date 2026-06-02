@@ -1,23 +1,21 @@
 document.addEventListener('DOMContentLoaded', async function() {
-    const token = localStorage.getItem('access_token');
+    const isLoggedIn = localStorage.getItem('is_logged_in');
 
-    if (!token) {
-        window.location.href = "http://localhost:8080/";
+    if (isLoggedIn != 'true') {
+        window.location.href = "/";
     } else {
         const perfil = document.getElementById("perfilUser");
         try {
             const response = await fetch("/api/user/profile", {
                 method: 'GET',
                 headers: {
-                    'Authorization': `Bearer ${token}`,
                     'Content-Type': 'application/json'
                 }
             });
 
             if (response.status === 401 || response.status === 403) {
                 console.warn("Sessão inválida ou expirada. Refaça o login.");
-                localStorage.removeItem('access_token');
-                window.location.href = '/login';
+                localStorage.removeItem('is_logged_in');
                 return;
             }
 

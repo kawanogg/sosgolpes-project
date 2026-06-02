@@ -1,6 +1,6 @@
-from fastapi import Depends, HTTPException, Security, status
-from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
-from jose import jwt, JWTError
+from fastapi import Depends, HTTPException, Security, status, Request
+from jwt import PyJWKClient
+import jwt
 import os
 import requests
 import hmac
@@ -13,9 +13,7 @@ CLIENT_ID = os.getenv('COGNITO_CLIENT_ID')
 CLIENT_SECRET = os.getenv('COGNITO_CLIENT_SECRET')
 JWKS_URL = f"https://cognito-idp.{COGNITO_REGION}.amazonaws.com/{USER_POOL_ID}/.well-known/jwks.json"
 
-jwks = requests.get(JWKS_URL).json()
-
-security = HTTPBearer()
+jwks_client = PyJWKClient(JWKS_URL)
 
 def calcular_secret_hash(username: str):
     mensagem = bytes(username + CLIENT_ID, 'utf-8')
@@ -27,17 +25,25 @@ def calcular_secret_hash(username: str):
 
     return secret_hash
 
-def validar_token_jwt(credentials: HTTPAuthorizationCredentials = Security(security)):
-    token = credentials.credentials
+def validar_token_jwt(request: Request):
+    token = request.cookies.get("access_token")
+
+    if not token:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Não autenticado. Token não encontrado nos cookies."
+        )
     try:
+        signing_key = jwks_client.get_signing_key_from_jwt(token)
+
         payload = jwt.decode(
             token,
-            jwks,
+            signing_key.key,
             algorithms=['RS256'],
             audience=CLIENT_ID
         )
         return payload
-    except JWTError:
+    except jwt.InvalidTokenError:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Token inválido, expirado ou corrompido",

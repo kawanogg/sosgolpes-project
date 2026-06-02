@@ -1,22 +1,22 @@
 document.addEventListener('DOMContentLoaded', async function() {
     const menuNavegacao = document.getElementById('menuNavegacao');
-    const token = localStorage.getItem('access_token');
+    const isLoggedIn = localStorage.getItem('is_logged_in');
     const paginaAtual = window.location.pathname;
 
     let linksHTML = `
-        <li><a href="/link_analysis" class="${paginaAtual.includes('link_analysis') ? 'ativo' : ''}">Analisar Link</a></li>
-        <li><a href="/password_checker" class="${paginaAtual.includes('password_checker') ? 'ativo' : ''}">Auditoria de Senha</a></li>
+        <li><a href="/link_analysis" class="${paginaAtual === '/link_analysis' ? 'ativo' : ''}">Analisar Link</a></li>
+        <li><a href="/password_checker" class="${paginaAtual === '/password_checker' ? 'ativo' : ''}">Auditoria de Senha</a></li>
     `;
 
-    if (token) {
+    if (isLoggedIn === 'true') {
         linksHTML += `
-            <li><a href="/user_profile" class="${paginaAtual.includes('user_profile') ? 'ativo' : ''}">Meu Perfil</a></li>
+            <li><a href="/user_profile" class="${paginaAtual === '/user_profile' ? 'ativo' : ''}">Meu Perfil</a></li>
             <li><a href="#" id="btnSairNav">Sair</a></li>
         `;
     } else {
         linksHTML += `
-            <li><a href="/login" class="${paginaAtual.includes('login') ? 'ativo' : ''}">Login</a></li>
-            <li><a href="/register" class="${paginaAtual.includes('register') ? 'ativo' : ''}">Cadastre-se</a></li>
+            <li><a href="/login" class="${paginaAtual === '/login' ? 'ativo' : ''}">Login</a></li>
+            <li><a href="/register" class="${paginaAtual === '/register' ? 'ativo' : ''}">Cadastre-se</a></li>
         `;
     }
 
@@ -35,22 +35,17 @@ document.addEventListener('DOMContentLoaded', async function() {
 
 
 async function realizarLogout() {
-    const token = localStorage.getItem('access_token');
+    const isLoggedIn = localStorage.getItem('is_logged_in');
     
-    if (token) {
+    if (isLoggedIn === 'true') {
         try {
             await fetch('/api/auth/logout', {
-                method: 'POST',
-                headers: { 'Authorization': `Bearer ${token}` }
+                method: 'GET',
             });
+            localStorage.removeItem('is_logged_in');
         } catch (e) {
             console.warn("Não foi possível avisar o servidor, forçando logout local.");
         }
-    }
-
-    localStorage.removeItem('access_token');
-    localStorage.removeItem('id_token');
-    localStorage.removeItem('refresh_token');
-    
+    }    
     window.location.href = '/login';
 }

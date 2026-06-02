@@ -1,8 +1,8 @@
-document.addEventListener('DOMContentLoaded', () => {
-    const token = localStorage.getItem('access_token');
+document.addEventListener('DOMContentLoaded', function() {
+    const isLoggedIn = localStorage.getItem('is_logged_in');
 
-    if (token) {
-        window.location.href = "http://localhost:8080/"
+    if (isLoggedIn === 'true') {
+        window.location.href = "/"
     }
 });
 
@@ -37,7 +37,7 @@ async function registrar_usuario(email, nome, senha) {
             const dados = await resp.json();
 
             if (dados.status === 'sucesso') {
-                window.location.href = "http://localhost:8080/login"
+                window.location.href = "/login"
             } else if (dados.status === 'erro') {
                 alert(dados.mensagem)
             }

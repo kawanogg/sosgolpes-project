@@ -4,7 +4,7 @@ import time
 import boto3
 from botocore.exceptions import ClientError
 from datetime import datetime
-from fastapi import FastAPI, Request, HTTPException, Depends
+from fastapi import FastAPI, Request, HTTPException, Depends, Response
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse, PlainTextResponse
 import mysql.connector
@@ -99,7 +99,7 @@ async def registrar_usuario(request: Request, db=Depends(get_db)):
 
 
 @app.post("/api/auth/login")
-async def login(request: Request):
+async def login(request: Request, response: Response):
     try:
         dados = await request.json()
         email = dados.get("email").strip()
@@ -108,7 +108,7 @@ async def login(request: Request):
         if not email or not senha:
             raise HTTPException(status_code=400, detail="E-mail e senha são obrigatórios.")
         
-        response = cognito_client.admin_initiate_auth(
+        response_cognito = cognito_client.admin_initiate_auth(
             UserPoolId=USER_POOL_ID,
             ClientId=CLIENT_ID,
             AuthFlow='ADMIN_NO_SRP_AUTH',
@@ -119,18 +119,29 @@ async def login(request: Request):
             }
         )
 
-        resultado_auth = response['AuthenticationResult']
+        resultado_auth = response_cognito['AuthenticationResult']
+
+        response.set_cookie(
+            key="access_token",
+            value=resultado_auth['AccessToken'],
+            httponly=True,
+            secure=False,
+            samesite="lax",
+            max_age=resultado_auth['ExpiresIn']
+        )
+
+        response.set_cookie(
+            key="refresh_token",
+            value=resultado_auth['RefreshToken'],
+            httponly=True,
+            secure=False,
+            samesite="lax",
+            max_age=5*24*60*60
+        )
 
         return {
             "status": "sucesso",
             "mensagem": "Login realizado com sucesso",
-            "tokens": {
-                "access_token": resultado_auth['AccessToken'],
-                "id_token": resultado_auth['IdToken'],
-                "refresh_token": resultado_auth['RefreshToken'],
-                "token_type": "Bearer",
-                "expires_in": resultado_auth['ExpiresIn']
-            }
         }
     except ClientError as e:
         codigo_erro = e.response['Error']['Code']
@@ -145,7 +156,7 @@ async def login(request: Request):
             raise HTTPException(status_code=500, detail=f"Erro interno de autenticação: {e.response['Error']['Message']}")
 
 @app.post("/api/auth/logout")
-async def logout(usuario: dict = Depends(validar_token_jwt)):
+async def logout(response: Response, usuario: dict = Depends(validar_token_jwt)):
     try:
         username = usuario.get("username")
 
@@ -153,6 +164,9 @@ async def logout(usuario: dict = Depends(validar_token_jwt)):
             UserPoolId=USER_POOL_ID,
             Username=username
         )
+
+        response.delete_cookie(key="access_token", httponly=True, secure=True, samesite="lax")
+        response.delete_cookie(key="refresh_token", httponly=True, secure=True, samesite="lax")
 
         return {"status": "sucesso", "mensagem": "Sessão encerrada com segurança no servidor."}
     except Exception as e:
