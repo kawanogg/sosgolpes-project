@@ -15,7 +15,17 @@ from helpers.analise_links import (
     analisar_virus_total
 )
 
+from helpers.crypto import descriptografar_e_gerar_hash
+
 app = FastAPI()
+
+@app.get("/api/threats/chave_publica")
+def get_public_key():
+    caminho = '/var/keys/public_key.pem'
+    if not os.path.exists(caminho):
+        raise HTTPException(status_code=500, detail="Chave publica nao encontrada.")
+    with open(caminho, 'r') as f:
+        return PlainTextResponse(f.read())
 
 @app.post("/api/threats/processar_senha")
 async def processar_senha(request: Request, db=Depends(get_db)):
