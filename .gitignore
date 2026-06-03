@@ -6,3 +6,4 @@ db_data/
 Thumbs.db
 *.log
 .env
+__pycache__
