@@ -8,7 +8,7 @@ from cryptography.hazmat.primitives.asymmetric import padding as crypto_padding
 from cryptography.hazmat.backends import default_backend
 
 def descriptografar_e_gerar_hash(dados_b64: str) -> str:
-    caminho_chave_privada = '/tmp/keys/private_key.pem'
+    caminho_chave_privada = '/var/keys/private_key.pem'
     if not os.path.exists(caminho_chave_privada):
         print("Chave privada nao encontrada no caminho especificado.")
         raise HTTPException(status_code=500, detail="Erro interno de configuracao do servidor.")

@@ -21,7 +21,7 @@ app = FastAPI()
 
 @app.get("/api/threats/chave_publica")
 def get_public_key():
-    caminho = '/tmp/keys/public_key.pem'
+    caminho = '/var/keys/public_key.pem'
     if not os.path.exists(caminho):
         raise HTTPException(status_code=500, detail="Chave publica nao encontrada.")
     with open(caminho, 'r') as f:

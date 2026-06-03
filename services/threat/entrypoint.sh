@@ -1,5 +1,5 @@
 #!/bin/bash
-KEYS_DIR="/tmp/keys"
+KEYS_DIR="/var/keys"
 
 if [ ! -f "$KEYS_DIR/private_key.pem" ]; then
     echo "Gerando par de chaves RSA..."
