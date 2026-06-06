@@ -112,6 +112,22 @@ async def obter_estatisticas(payload=Depends(requer_admin), db=Depends(get_db)):
         cursor.execute("SELECT nivel_perigo, COUNT(*) as count FROM Analise_Link GROUP BY nivel_perigo")
         perigo_stats = cursor.fetchall()
         
+        # Contadores de tipos de testes
+        cursor.execute("SELECT COUNT(*) as count FROM Log_Acesso WHERE acao_realizada LIKE '%Verificacao de senha%'")
+        teste_senhas = cursor.fetchone()['count']
+        
+        cursor.execute("SELECT COUNT(*) as count FROM Log_Acesso WHERE acao_realizada LIKE '%Verificacao de senha%' AND acao_realizada LIKE '%Segura%'")
+        senhas_seguras = cursor.fetchone()['count']
+        
+        cursor.execute("SELECT COUNT(*) as count FROM Log_Acesso WHERE acao_realizada LIKE '%Verificacao de senha%' AND acao_realizada LIKE '%Vazada%'")
+        senhas_vazadas = cursor.fetchone()['count']
+        
+        cursor.execute("SELECT COUNT(*) as count FROM Log_Acesso WHERE acao_realizada LIKE '%Analise de link%'")
+        teste_links = cursor.fetchone()['count']
+        
+        cursor.execute("SELECT COUNT(*) as count FROM Log_Acesso WHERE acao_realizada LIKE '%QR Code%' OR acao_realizada LIKE '%validacao de qr%'")
+        teste_qr = cursor.fetchone()['count']
+        
         query_logs = """
             SELECT l.data_hora, u.nome, l.acao_realizada, l.endereco_ip 
             FROM Log_Acesso l 
@@ -129,6 +145,15 @@ async def obter_estatisticas(payload=Depends(requer_admin), db=Depends(get_db)):
             'status': 'sucesso',
             'stats': stats,
             'perigo_stats': perigo_stats,
+            'teste_tipos': {
+                'senhas': teste_senhas,
+                'links': teste_links,
+                'qr_codes': teste_qr
+            },
+            'senha_status': {
+                'seguras': senhas_seguras,
+                'vazadas': senhas_vazadas
+            },
             'logs': logs
         }
     except Exception as e:

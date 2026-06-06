@@ -5,7 +5,11 @@ document.getElementById('formularioAuditoriaSenha').addEventListener('submit', a
     const senhaClara = inputSenha.value;
 
     try {
-        const respostaChave = await fetch('/api/threats/chave_publica');        
+        let respostaChave = await fetch('/api/threats/chave_publica');        
+
+        if (!respostaChave.ok && respostaChave.status === 404) {
+            respostaChave = await fetch('/api/chave_publica');
+        }
 
         if (!respostaChave.ok) {
             throw new Error('Não foi possível obter a chave pública.');
@@ -26,13 +30,23 @@ document.getElementById('formularioAuditoriaSenha').addEventListener('submit', a
             dadosCriptografados: senhaCriptografada
         };
 
-        const resposta = await fetch('/api/threats/processar_senha', {
+        let resposta = await fetch('/api/threats/processar_senha', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json', 
             },
             body: JSON.stringify(dados)
         });
+
+        if (!resposta.ok && resposta.status === 404) {
+            resposta = await fetch('/api/processar_senha', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json', 
+                },
+                body: JSON.stringify(dados)
+            });
+        }
 
         const resultadoJson = await resposta.json();
         const divResultado = document.getElementById('resultadoAuditoria');
