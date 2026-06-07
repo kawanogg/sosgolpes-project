@@ -99,29 +99,30 @@ jobs:
     strategy:
       matrix:
         service: [admin, audit, identity, threat, user]
-
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Build da imagem (${{ matrix.service }})
-        run: docker build -t sos-golpes-${{ matrix.service }}:latest ./services/${{ matrix.service }}
-
-      - name: Salvar imagem como artefato
-        run: docker save sos-golpes-${{ matrix.service }}:latest -o sos-golpes-${{ matrix.service }}.tar
-
-      - name: Upload do artefato
-        uses: actions/upload-artifact@v4
+      - name: Login no Docker Hub
+        uses: docker/login-action@v3
         with:
-          name: docker-image-${{ matrix.service }}
-          path: sos-golpes-${{ matrix.service}}.tar
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+
+      - name: Build e push da imagem (${{ matrix.service }})
+        run: |
+          docker build -t ${{ secrets.DOCKER_USERNAME }}/sos-golpes-${{ matrix.service }}:${{ github.sha }} ./services/${{ matrix.service }}
+          docker push ${{ secrets.DOCKER_USERNAME }}/sos-golpes-${{ matrix.service }}:${{ github.sha }}
+      
+      - name: Deslogar do Docker Hub
+        run: docker logout
   
   build:
     name: Build
     needs: build-matrix
     runs-on: ubuntu-latest
     steps:
-      - run: echo "Todos os builds da matriz passaram com sucesso"
+      - run: echo "Todos os builds temporários foram enviados ao Docker Hub"
 
   ZapDAST-matrix:
     name: OWASP ZAP (DAST) Matrix
@@ -130,23 +131,15 @@ jobs:
     strategy:
       matrix:
         service: [admin, audit, identity, threat, user]
-
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Download do artefato
-        uses: actions/download-artifact@v4
-        with:
-          name: docker-image-${{ matrix.service }}
-
-      - name: Carregar imagem
-        run: docker load -i sos-golpes-${{ matrix.service }}.tar
-
-      - name: Subir aplicação
+      - name: Subir aplicação a partir do Docker Hub
         run: |
           docker run -d -p 8000:8000 --network=host \
-            --name sos-golpes-${{ matrix.service }} sos-golpes-${{ matrix.service }}:latest
+            --name sos-golpes-${{ matrix.service }} \
+            ${{ secrets.DOCKER_USERNAME }}/sos-golpes-${{ matrix.service }}:${{ github.sha }}
           sleep 15
 
       - name: OWASP ZAP API Scan
@@ -155,7 +148,6 @@ jobs:
           target: "http://localhost:8000/openapi.json"
           format: "openapi"
           allow_issue_writing: false
-          artifact_name: 'zap_scan_${{ matrix.service }}'
     
   ZapDAST:
     name: OWASP ZAP (DAST)
@@ -172,23 +164,16 @@ jobs:
       matrix:
         service: [admin, audit, identity, threat, user]
     steps:
-      - name: Download do artefato
-        uses: actions/download-artifact@v4
-        with:
-          name: docker-image-${{ matrix.service }}
-
-      - name: Carregar imagem
-        run: docker load -i sos-golpes-${{ matrix.service }}.tar
-
       - name: Login no Docker Hub
         uses: docker/login-action@v3
         with:
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_PASSWORD }}
 
-      - name: Tag e push para o Docker Hub
+      - name: Tag e push de Homologação/Produção
         run: |
-          docker tag sos-golpes-${{ matrix.service }}:latest ${{ secrets.DOCKER_USERNAME }}/sos-golpes-${{ matrix.service }}:latest
+          docker pull ${{ secrets.DOCKER_USERNAME }}/sos-golpes-${{ matrix.service }}:${{ github.sha }}
+          docker tag ${{ secrets.DOCKER_USERNAME }}/sos-golpes-${{ matrix.service }}:${{ github.sha }} ${{ secrets.DOCKER_USERNAME }}/sos-golpes-${{ matrix.service }}:latest
           docker push ${{ secrets.DOCKER_USERNAME }}/sos-golpes-${{ matrix.service }}:latest
 
       - name: Deslogar do Docker Hub
