@@ -4,6 +4,7 @@ from pydantic import BaseModel
 import mysql.connector
 
 from db.connect_db import get_db
+from helpers.auth import requer_admin
 
 app = FastAPI()
 
@@ -12,13 +13,13 @@ class LeakCreate(BaseModel):
     fonte: str
 
 @app.get("/api/admin/leaks")
-async def listar_leaks(db=Depends(get_db)):
+async def listar_leaks(payload=Depends(requer_admin), db=Depends(get_db)):
     cursor = db.cursor(dictionary=True)
     cursor.execute("SELECT * FROM Registro_Leak ORDER BY id_leak DESC")
     return cursor.fetchall()
 
 @app.get("/api/admin/leaks/{id_leak}")
-async def obter_leak(id_leak: int, db=Depends(get_db)):
+async def obter_leak(id_leak: int, payload=Depends(requer_admin), db=Depends(get_db)):
     cursor = db.cursor(dictionary=True)
     cursor.execute("SELECT * FROM Registro_Leak WHERE id_leak = %s", (id_leak,))
     resultado = cursor.fetchone()
@@ -27,7 +28,7 @@ async def obter_leak(id_leak: int, db=Depends(get_db)):
     return resultado
 
 @app.post("/api/admin/leaks")
-async def criar_leak(leak: LeakCreate, db=Depends(get_db)):
+async def criar_leak(leak: LeakCreate, payload=Depends(requer_admin), db=Depends(get_db)):
     if not leak.senha_hash or not leak.fonte:
         raise HTTPException(status_code=400, detail="Campos 'senha_hash' e 'fonte' sao obrigatorios.")
 
@@ -51,7 +52,7 @@ async def criar_leak(leak: LeakCreate, db=Depends(get_db)):
         raise HTTPException(status_code=500, detail="Falha interna no banco de dados.")
 
 @app.put("/api/admin/leaks/{id_leak}")
-async def atualizar_leak(id_leak: int, leak: LeakCreate, db=Depends(get_db)):
+async def atualizar_leak(id_leak: int, leak: LeakCreate, payload=Depends(requer_admin), db=Depends(get_db)):
     if not leak.senha_hash or not leak.fonte:
         raise HTTPException(status_code=400, detail="Campos 'senha_hash' e 'fonte' sao obrigatorios.")
 
@@ -82,7 +83,7 @@ async def atualizar_leak(id_leak: int, leak: LeakCreate, db=Depends(get_db)):
         raise HTTPException(status_code=500, detail="Falha interna no banco de dados.")
 
 @app.delete("/api/admin/leaks/{id_leak}")
-async def deletar_leak(id_leak: int, db=Depends(get_db)):
+async def deletar_leak(id_leak: int, payload=Depends(requer_admin), db=Depends(get_db)):
     cursor = db.cursor()
     cursor.execute("DELETE FROM Registro_Leak WHERE id_leak = %s", (id_leak,))
     if cursor.rowcount == 0:
@@ -91,7 +92,7 @@ async def deletar_leak(id_leak: int, db=Depends(get_db)):
     return {"status": "sucesso", "mensagem": "Registro deletado!"}
 
 @app.get("/api/admin/admin_stats")
-async def obter_estatisticas(db=Depends(get_db)):
+async def obter_estatisticas(payload=Depends(requer_admin), db=Depends(get_db)):
     cursor = db.cursor(dictionary=True)
     try:
         stats = {}
@@ -111,6 +112,22 @@ async def obter_estatisticas(db=Depends(get_db)):
         cursor.execute("SELECT nivel_perigo, COUNT(*) as count FROM Analise_Link GROUP BY nivel_perigo")
         perigo_stats = cursor.fetchall()
         
+        # Contadores de tipos de testes
+        cursor.execute("SELECT COUNT(*) as count FROM Log_Acesso WHERE acao_realizada LIKE '%Verificacao de senha%'")
+        teste_senhas = cursor.fetchone()['count']
+        
+        cursor.execute("SELECT COUNT(*) as count FROM Log_Acesso WHERE acao_realizada LIKE '%Verificacao de senha%' AND acao_realizada LIKE '%Segura%'")
+        senhas_seguras = cursor.fetchone()['count']
+        
+        cursor.execute("SELECT COUNT(*) as count FROM Log_Acesso WHERE acao_realizada LIKE '%Verificacao de senha%' AND acao_realizada LIKE '%Vazada%'")
+        senhas_vazadas = cursor.fetchone()['count']
+        
+        cursor.execute("SELECT COUNT(*) as count FROM Log_Acesso WHERE acao_realizada LIKE '%Analise de link%'")
+        teste_links = cursor.fetchone()['count']
+        
+        cursor.execute("SELECT COUNT(*) as count FROM Log_Acesso WHERE acao_realizada LIKE '%QR Code%' OR acao_realizada LIKE '%validacao de qr%'")
+        teste_qr = cursor.fetchone()['count']
+        
         query_logs = """
             SELECT l.data_hora, u.nome, l.acao_realizada, l.endereco_ip 
             FROM Log_Acesso l 
@@ -128,6 +145,15 @@ async def obter_estatisticas(db=Depends(get_db)):
             'status': 'sucesso',
             'stats': stats,
             'perigo_stats': perigo_stats,
+            'teste_tipos': {
+                'senhas': teste_senhas,
+                'links': teste_links,
+                'qr_codes': teste_qr
+            },
+            'senha_status': {
+                'seguras': senhas_seguras,
+                'vazadas': senhas_vazadas
+            },
             'logs': logs
         }
     except Exception as e:

@@ -10,10 +10,7 @@ from fastapi.responses import FileResponse, PlainTextResponse
 import mysql.connector
 
 from db.connect_db import get_db
-from helpers.crypto import (
-    descriptografar_e_gerar_hash,
-    gerar_hash_senha
-)
+
 from helpers.auth import (
     calcular_secret_hash,
     validar_token_jwt
@@ -26,14 +23,6 @@ CLIENT_ID = os.getenv('COGNITO_CLIENT_ID')
 app = FastAPI()
 
 # --- ROTAS DE API ---
-@app.get("/api/chave_publica")
-def get_public_key():
-    caminho = '/var/keys/public_key.pem'
-    if not os.path.exists(caminho):
-        raise HTTPException(status_code=500, detail="Chave publica nao encontrada.")
-    with open(caminho, 'r') as f:
-        return PlainTextResponse(f.read())
-
 @app.post("/api/auth/registrar_usuario")
 async def registrar_usuario(request: Request, db=Depends(get_db)):
     try:
