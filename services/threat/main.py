@@ -1,4 +1,5 @@
 import os
+import json
 import urllib
 import time
 from datetime import datetime
@@ -16,6 +17,7 @@ from helpers.analise_links import (
 )
 
 from helpers.crypto import descriptografar_e_gerar_hash
+from helpers.auth import extrair_usuario_opcional, resolver_email_cognito
 
 app = FastAPI()
 
@@ -124,6 +126,50 @@ async def analisar_link(request: Request, db=Depends(get_db)):
         db.commit()
     except Exception as log_err:
         print(f"Erro ao salvar log: {log_err}")
+
+    try:
+        usuario_jwt = extrair_usuario_opcional(request)
+        if usuario_jwt:
+            cognito_username = usuario_jwt.get("username")
+            print(f"[HISTORICO] Username do JWT: {cognito_username}")
+            if cognito_username:
+                dados_cognito = resolver_email_cognito(cognito_username)
+                if dados_cognito:
+                    email_usuario = dados_cognito["email"]
+                    nome_usuario = dados_cognito["nome"]
+                    cursor = db.cursor(dictionary=True)
+                    cursor.execute("SELECT id_usuario FROM Usuario WHERE email = %s", (email_usuario,))
+                    usuario_db = cursor.fetchone()
+
+                    if not usuario_db:
+                        print(f"[HISTORICO] Criando usuario no DB: {email_usuario}")
+                        cursor.execute(
+                            "INSERT INTO Usuario (id_perfil, nome, email, senha_hash) VALUES (2, %s, %s, %s)",
+                            (nome_usuario, email_usuario, 'COGNITO_MANAGED')
+                        )
+                        db.commit()
+                        cursor.execute("SELECT id_usuario FROM Usuario WHERE email = %s", (email_usuario,))
+                        usuario_db = cursor.fetchone()
+
+                    print(f"[HISTORICO] Usuario DB: {usuario_db}")
+                    if usuario_db:
+                        detalhes = json.dumps({
+                            "resumo": resumo,
+                            "pontuacao_risco": pontuacao,
+                            "heuristica": heuristica.get("pontuacao", 0),
+                            "google_safe_browsing": gsb.get("pontuacao", 0),
+                            "virus_total": vt.get("pontuacao", 0),
+                        })
+                        cursor.execute(
+                            "INSERT INTO Analise_Link (id_usuario, url_analisada, nivel_perigo, detalhes_analise) VALUES (%s, %s, %s, %s)",
+                            (usuario_db["id_usuario"], url_crua, nivel, detalhes)
+                        )
+                        db.commit()
+                        print(f"[HISTORICO] Registro salvo com sucesso.")
+        else:
+            print("[HISTORICO] JWT nao disponivel, historico nao salvo.")
+    except Exception as hist_err:
+        print(f"Erro ao salvar historico: {hist_err}")
 
     return {
         'url_analisada': url_crua,

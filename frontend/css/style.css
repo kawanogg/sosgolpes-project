@@ -473,3 +473,63 @@ input[type="password"]:focus, input[type="text"]:focus {
     border-top: 1px solid #e5e7eb;
     margin-top: auto;
 }
+
+/* Histórico de Análises */
+.tabela-historico {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.9rem;
+}
+
+.tabela-historico th,
+.tabela-historico td {
+    padding: 0.75rem 1rem;
+    text-align: left;
+    border-bottom: 1px solid #e5e7eb;
+}
+
+.tabela-historico th {
+    font-weight: 600;
+    color: #374151;
+    background-color: #f9fafb;
+}
+
+.tabela-historico tr:hover {
+    background-color: #f3f4f6;
+}
+
+.celula-url {
+    max-width: 300px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.badge-nivel {
+    display: inline-block;
+    padding: 0.2rem 0.6rem;
+    border-radius: 999px;
+    font-size: 0.8rem;
+    font-weight: 600;
+}
+
+.badge-seguro {
+    background-color: rgba(16, 185, 129, 0.15);
+    color: #059669;
+}
+
+.badge-suspeito {
+    background-color: rgba(245, 158, 11, 0.15);
+    color: #d97706;
+}
+
+.badge-malicioso {
+    background-color: rgba(239, 68, 68, 0.15);
+    color: #dc2626;
+}
+
+.texto-vazio {
+    text-align: center;
+    color: #6b7280;
+    padding: 2rem 0;
+}
