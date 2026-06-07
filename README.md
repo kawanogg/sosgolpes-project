@@ -64,7 +64,7 @@ docker-compose down -v
 ### Fase 0: Requisitos Funcionais
 
 - [x] Validacao de QR Codes
-- [ ] Estatisticas de Tipo de Ameaca *(painel geral pronto, falta agregar dados por ameaca)*
+- [x] Estatisticas de Tipo de Ameaca *(painel geral e agregação por nível de ameaça implementados no microserviço de admin)*
 - [ ] Edicao de Perfil do Usuario
 - [ ] Historico de pesquisas anteriores *(tem o botao "Meu Historico", mas eh dummy :\))*
 - [ ] Alertas de Riscos
@@ -83,6 +83,7 @@ docker-compose down -v
 - [x] Interface do Painel Administrativo
 - [x] CRUD completo da tabela Registro_Leak *(falta update/edit de registros)*
 - [x] Visualizacao de estatisticas gerais e Log_Acesso
+- [x] Estatísticas por tipo de ameaça no painel administrativo
 
 ### Fase 3: Seguranca de Aplicacao (AppSec)
 
