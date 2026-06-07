@@ -67,7 +67,7 @@ docker-compose down -v
 - [x] Estatisticas de Tipo de Ameaca *(painel geral e agregação por nível de ameaça implementados no microserviço de admin)*
 - [ ] Edicao de Perfil do Usuario
 - [x] Historico de pesquisas anteriores *(tem o botao "Meu Historico", mas eh dummy :\))*
-- [ ] Alertas de Riscos
+- [x] Alertas de Riscos
 - [ ] Denuncia de links e golpes
 
 ### Fase 1: Autenticacao e Controle de Acesso
