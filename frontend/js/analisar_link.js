@@ -12,7 +12,8 @@ async function executarAnalise(url) {
         const resp = await fetch('/api/threats/analisar_link', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ url: url })
+            body: JSON.stringify({ url: url }),
+            credentials: 'include'
         });
         const dados = await resp.json();
         document.getElementById('loadingOverlay').classList.add('oculto');

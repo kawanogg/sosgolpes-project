@@ -11,6 +11,7 @@ document.addEventListener('DOMContentLoaded', async function() {
     if (isLoggedIn === 'true') {
         linksHTML += `
             <li><a href="/user_profile" class="${paginaAtual === '/user_profile' ? 'ativo' : ''}">Meu Perfil</a></li>
+            <li><a href="/history" class="${paginaAtual === '/history' ? 'ativo' : ''}">Meu Histórico</a></li>
             <li><a href="#" id="btnSairNav">Sair</a></li>
         `;
     } else {
@@ -40,7 +41,8 @@ async function realizarLogout() {
     if (isLoggedIn === 'true') {
         try {
             await fetch('/api/auth/logout', {
-                method: 'GET',
+                method: 'POST',
+                credentials: 'include'
             });
             localStorage.removeItem('is_logged_in');
         } catch (e) {
