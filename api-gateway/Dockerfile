@@ -1,11 +1,16 @@
 FROM nginx:alpine
 
+RUN apk add --no-cache openssl
+
 RUN rm /etc/nginx/conf.d/default.conf
 
 COPY nginx.conf /etc/nginx/nginx.conf
-COPY certs /etc/nginx/certs
+COPY entrypoint.sh /entrypoint.sh
 
-RUN chown -R nginx:nginx /var/cache/nginx && \
+RUN chmod +x /entrypoint.sh
+
+RUN mkdir -p /etc/nginx/certs && \
+    chown -R nginx:nginx /var/cache/nginx && \
     chown -R nginx:nginx /var/log/nginx && \
     chown -R nginx:nginx /etc/nginx/conf.d && \
     chown -R nginx:nginx /etc/nginx/certs && \
@@ -15,5 +20,7 @@ RUN chown -R nginx:nginx /var/cache/nginx && \
 USER nginx
 
 EXPOSE 8080 8443
+
+ENTRYPOINT ["/entrypoint.sh"]
 
 CMD ["nginx", "-g", "daemon off;"]
