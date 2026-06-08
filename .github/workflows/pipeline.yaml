@@ -126,7 +126,7 @@ jobs:
         service: [frontend, api-gateway]
     steps:
       - name: Checkout
-        uses: action/checkout@v4
+        uses: actions/checkout@v4
       
       - name: Login no Docker Hub
         uses: docker/login-action@v3
