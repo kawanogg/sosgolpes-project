@@ -7,7 +7,8 @@ RUN rm /etc/nginx/conf.d/default.conf
 COPY nginx.conf /etc/nginx/nginx.conf
 COPY entrypoint.sh /entrypoint.sh
 
-RUN chmod +x /entrypoint.sh
+RUN sed -i 's/\r$//' /entrypoint.sh && \
+    chmod +x /entrypoint.sh
 
 RUN mkdir -p /etc/nginx/certs && \
     chown -R nginx:nginx /var/cache/nginx && \
