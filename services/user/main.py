@@ -9,7 +9,7 @@ from fastapi.responses import FileResponse, PlainTextResponse
 import mysql.connector
 
 from db.connect_db import get_db
-from helpers.auth import validar_token_jwt
+from helpers.auth import requer_cidadao
 
 cognito_client = boto3.client('cognito-idp', region_name='us-east-2')
 USER_POOL_ID = os.getenv('COGNITO_USER_POOL_ID')
@@ -17,7 +17,7 @@ USER_POOL_ID = os.getenv('COGNITO_USER_POOL_ID')
 app = FastAPI()
 
 @app.get("/api/user/profile")
-async def user_profile(usuario: dict = Depends(validar_token_jwt), db=Depends(get_db)):
+async def user_profile(usuario: dict = Depends(requer_cidadao), db=Depends(get_db)):
     email_logado = usuario.get("username")
 
     if not email_logado:
@@ -57,7 +57,7 @@ async def user_profile(usuario: dict = Depends(validar_token_jwt), db=Depends(ge
 
 
 @app.get("/api/user/history")
-async def user_history(usuario: dict = Depends(validar_token_jwt), db=Depends(get_db)):
+async def user_history(usuario: dict = Depends(requer_cidadao), db=Depends(get_db)):
     cognito_username = usuario.get("username")
 
     if not cognito_username:

@@ -45,3 +45,12 @@ def validar_token_jwt(request: Request):
             detail=f"Token inválido ou corrompido.",
             headers={"WWW-Authenticate": "Bearer"}
         )
+
+def requer_cidadao(payload: dict = Depends(validar_token_jwt)):
+    grupos = payload.get("cognito:groups", [])
+    if "Cidadao" not in grupos and "Administrador" not in grupos:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Acesso negado. Acesso restrito a usuários autenticados (Cidadao)."
+        )
+    return payload
