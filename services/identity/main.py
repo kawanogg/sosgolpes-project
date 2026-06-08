@@ -13,7 +13,8 @@ from db.connect_db import get_db
 
 from helpers.auth import (
     calcular_secret_hash,
-    validar_token_jwt
+    validar_token_jwt,
+    requer_admin
 )
 
 cognito_client = boto3.client('cognito-idp', region_name='us-east-2')
@@ -203,6 +204,10 @@ async def nova_senha(request: Request, response: Response):
 
     except ClientError as e:
         raise HTTPException(status_code=400, detail=f"Erro ao redefinir senha: {e.response['Error']['Message']}")
+
+@app.get("/api/auth/verify_admin")
+async def verify_admin(usuario: dict = Depends(requer_admin)):
+    return {"status": "sucesso"}
 
 @app.post("/api/auth/logout")
 async def logout(response: Response, usuario: dict = Depends(validar_token_jwt)):
