@@ -108,6 +108,14 @@ async def login(request: Request, response: Response):
             }
         )
 
+        if 'ChallengeName' in response_cognito and response_cognito['ChallengeName'] == 'NEW_PASSWORD_REQUIRED':
+            return {
+                "status": "desafio",
+                "mensagem": "Troca de senha inicial obrigatória",
+                "session": response_cognito['Session'],
+                "email": email
+            }
+
         resultado_auth = response_cognito['AuthenticationResult']
 
         response.set_cookie(
@@ -143,6 +151,58 @@ async def login(request: Request, response: Response):
             raise HTTPException(status_code=403, detail="A conta ainda não foi confirmada.")
         else:
             raise HTTPException(status_code=500, detail=f"Erro interno de autenticação: {e.response['Error']['Message']}")
+
+@app.post("/api/auth/nova_senha")
+async def nova_senha(request: Request, response: Response):
+    try:
+        dados = await request.json()
+        nome = dados.get("nome").strip()
+        email = dados.get("email").strip()
+        nova_senha = dados.get("nova_senha").strip()
+        session = dados.get("session").strip()
+
+        if not email or not nova_senha or not session:
+            raise HTTPException(status_code=400, detail="Dados incompletos para troca de senha.")
+        
+        response_cognito = cognito_client.admin_respond_to_auth_challenge(
+            UserPoolId=USER_POOL_ID,
+            ClientId=CLIENT_ID,
+            ChallengeName='NEW_PASSWORD_REQUIRED',
+            Session=session,
+            ChallengeResponses={
+                'USERNAME': email,
+                'NEW_PASSWORD': nova_senha,
+                'SECRET_HASH': calcular_secret_hash(email),
+                'userAttributes.name': nome
+            }
+        )
+
+        resultado_auth = response_cognito.get('AuthenticationResult')
+
+        if resultado_auth:
+            response.set_cookie(
+                key="access_token",
+                value=resultado_auth['AccessToken'],
+                httponly=True,
+                secure=True,
+                samesite="lax",
+                max_age=resultado_auth['ExpiresIn']
+            )
+
+            response.set_cookie(
+                key="refresh_token",
+                value=resultado_auth['RefreshToken'],
+                httponly=True,
+                secure=True,
+                samesite="lax",
+                max_age=5*24*60*60
+            )
+            return {"status": "sucesso", "mensagem": "Senha atualizada e login realizado"}
+        else:
+            raise HTTPException(status_code=400, detail="Falha ao concluir a autenticação.")
+
+    except ClientError as e:
+        raise HTTPException(status_code=400, detail=f"Erro ao redefinir senha: {e.response['Error']['Message']}")
 
 @app.post("/api/auth/logout")
 async def logout(response: Response, usuario: dict = Depends(validar_token_jwt)):

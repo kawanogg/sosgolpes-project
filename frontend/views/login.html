@@ -38,6 +38,35 @@
                         Fazer login
                     </button>
                 </form>
+
+                <form id="formularioNovaSenha" style="display: none;">
+                    <p style="margin-bottom: 20px; color: #555; text-align: center;">
+                        Este é o seu primeiro acesso em uma conta de administrador. Por favor, defina uma nova senha definitiva para a sua conta.
+                    </p>
+                    
+                    <div class="grupo-formulario">
+                        <label for="nomeInput">Seu Nome Completo:</label>
+                        <div class="envoltorio-entrada">
+                            <input type="text" id="nomeInput" name="nome" placeholder="Digite seu nome" required>
+                        </div>
+                        <label for="novaSenhaInput">Nova Senha:</label>
+                        <div class="envoltorio-entrada">
+                            <input type="password" id="novaSenhaInput" name="novaSenha" placeholder="Introduza a sua nova senha" required>
+                        </div>
+                        <label for="confirmaSenhaInput">Confirmar Senha:</label>
+                        <div class="envoltorio-entrada">
+                            <input type="password" id="confirmaSenhaInput" name="confirmaSenha" placeholder="Confirme a sua nova senha" required>
+                        </div>
+                    </div>
+
+                    <button type="submit" id="btnNovaSenha" class="botao botao-primario">
+                        Confirmar Nova Senha
+                    </button>
+                    
+                    <button type="button" id="btnCancelarNovaSenha" class="botao botao-secundario" style="margin-top: 10px; width: 100%;">
+                        Cancelar
+                    </button>
+                </form>
             </div>
         </section>
     </main>
