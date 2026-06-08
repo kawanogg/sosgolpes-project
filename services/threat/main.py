@@ -29,14 +29,6 @@ def get_public_key():
     with open(caminho, 'r') as f:
         return PlainTextResponse(f.read())
 
-@app.get("/api/chave_publica")
-def get_public_key_alias():
-    return get_public_key()
-
-@app.post("/api/processar_senha")
-async def processar_senha_alias(request: Request, db=Depends(get_db)):
-    return await processar_senha(request, db)
-
 @app.post("/api/threats/processar_senha")
 async def processar_senha(request: Request, db=Depends(get_db)):
     try:

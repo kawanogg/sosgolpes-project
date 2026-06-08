@@ -8,7 +8,7 @@ document.getElementById('formularioAuditoriaSenha').addEventListener('submit', a
         let respostaChave = await fetch('/api/threats/chave_publica');        
 
         if (!respostaChave.ok && respostaChave.status === 404) {
-            respostaChave = await fetch('/api/chave_publica');
+            respostaChave = await fetch('/api/threats/chave_publica');
         }
 
         if (!respostaChave.ok) {
@@ -39,7 +39,7 @@ document.getElementById('formularioAuditoriaSenha').addEventListener('submit', a
         });
 
         if (!resposta.ok && resposta.status === 404) {
-            resposta = await fetch('/api/processar_senha', {
+            resposta = await fetch('/api/threats/processar_senha', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json', 
