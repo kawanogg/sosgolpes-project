@@ -54,3 +54,47 @@ async def user_profile(usuario: dict = Depends(validar_token_jwt), db=Depends(ge
         raise HTTPException(status_code=404, detail="Usuário não encontrado nem no banco nem no Cognito.")
     except Exception as e:
         raise HTTPException(status_code=500, detail="Erro interno ao buscar dados do perfil.")
+
+
+@app.get("/api/user/history")
+async def user_history(usuario: dict = Depends(validar_token_jwt), db=Depends(get_db)):
+    cognito_username = usuario.get("username")
+
+    if not cognito_username:
+        raise HTTPException(status_code=400, detail="Usuário não identificado.")
+
+    try:
+        response_cognito = cognito_client.admin_get_user(
+            UserPoolId=USER_POOL_ID,
+            Username=cognito_username
+        )
+        atributos = {attr['Name']: attr['Value'] for attr in response_cognito['UserAttributes']}
+        email_real = atributos.get('email', cognito_username)
+
+        cursor = db.cursor(dictionary=True)
+        cursor.execute("SELECT id_usuario FROM Usuario WHERE email = %s", (email_real,))
+        usuario_db = cursor.fetchone()
+
+        if not usuario_db:
+            return {"status": "sucesso", "historico": []}
+
+        cursor.execute(
+            "SELECT url_analisada, nivel_perigo, detalhes_analise, data_consulta "
+            "FROM Analise_Link WHERE id_usuario = %s ORDER BY data_consulta DESC LIMIT 50",
+            (usuario_db["id_usuario"],)
+        )
+        registros = cursor.fetchall()
+
+        historico = []
+        for reg in registros:
+            historico.append({
+                "url": reg["url_analisada"],
+                "nivel": reg["nivel_perigo"],
+                "detalhes": reg["detalhes_analise"],
+                "data": reg["data_consulta"].isoformat() if reg["data_consulta"] else None
+            })
+
+        return {"status": "sucesso", "historico": historico}
+    except Exception as e:
+        print(f"Erro ao buscar histórico: {e}")
+        raise HTTPException(status_code=500, detail="Erro interno ao buscar histórico.")

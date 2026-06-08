@@ -66,13 +66,13 @@ docker-compose down -v
 - [x] Validacao de QR Codes
 - [x] Estatisticas de Tipo de Ameaca *(painel geral e agregação por nível de ameaça implementados no microserviço de admin)*
 - [ ] Edicao de Perfil do Usuario
-- [ ] Historico de pesquisas anteriores *(tem o botao "Meu Historico", mas eh dummy :\))*
-- [ ] Alertas de Riscos
+- [x] Historico de pesquisas anteriores *(tem o botao "Meu Historico", mas eh dummy :\))*
+- [x] Alertas de Riscos
 - [ ] Denuncia de links e golpes
 
 ### Fase 1: Autenticacao e Controle de Acesso
 
-- [ ] Login com Amazon Cognito
+- [x] Login com Amazon Cognito
 - [x] Registro de usuario com hash BCRYPT
 - [ ] Duplo fator de autenticacao — TOTP *(falta fluxo completo no login)*
 - [ ] Middleware RBAC nas rotas da API (Administrador / Cidadao)
@@ -87,10 +87,9 @@ docker-compose down -v
 
 ### Fase 3: Seguranca de Aplicacao (AppSec)
 
-- [ ] Revisao de Prepared Statements (SQL Injection)
 - [x] Verificacao de logs (nenhuma senha em texto claro)
 - [x] SAST (Bandit + Snyk Code)
-- [ ] DAST (OWASP ZAP)
+- [x] DAST (OWASP ZAP)
 - [x] SCA (Snyk)
 
 ### Fase 4: Seguranca de Infraestrutura

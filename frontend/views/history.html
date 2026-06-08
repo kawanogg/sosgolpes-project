@@ -1,0 +1,45 @@
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>SOS Golpes - Meu Histórico</title>
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+    <nav class="barra-navegacao">
+        <div class="recipiente conteudo-navegacao">
+            <h1 class="logotipo">SOS<span>Golpes</span></h1>
+            <ul class="links-navegacao" id="menuNavegacao">
+            </ul>
+        </div>
+    </nav>
+
+    <main class="recipiente">
+        <div class="cabecalho-secao">
+            <h2>Meu Histórico de Análises</h2>
+            <p>Veja suas análises de links e QR Codes anteriores.</p>
+        </div>
+
+        <div class="cartao">
+            <div id="historicoContainer">
+                <p id="historicoCarregando">Carregando histórico...</p>
+            </div>
+            <table id="tabelaHistorico" class="tabela-historico oculto">
+                <thead>
+                    <tr>
+                        <th>Data</th>
+                        <th>URL Analisada</th>
+                        <th>Nível</th>
+                        <th>Pontuação</th>
+                    </tr>
+                </thead>
+                <tbody id="corpoTabelaHistorico">
+                </tbody>
+            </table>
+            <p id="historicoVazio" class="oculto texto-vazio">Você ainda não realizou nenhuma análise de link.</p>
+        </div>
+    </main>
+
+    <script src="/js/nav_bar.js"></script>
+    <script src="/js/history.js"></script>
+</body>
+</html>
