@@ -75,8 +75,8 @@ docker-compose down -v
 - [x] Login com Amazon Cognito
 - [x] Registro de usuario com hash BCRYPT
 - [ ] Duplo fator de autenticacao — TOTP *(falta fluxo completo no login)*
-- [ ] Middleware RBAC nas rotas da API (Administrador / Cidadao)
-- [ ] Controle de sessao (JWT)
+- [x] Middleware RBAC nas rotas da API (Administrador / Cidadao)
+- [x] Controle de sessao (JWT)
 
 ### Fase 2: Painel do Administrador
 

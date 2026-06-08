@@ -11,6 +11,7 @@ COGNITO_REGION = "us-east-2"
 USER_POOL_ID = os.getenv('COGNITO_USER_POOL_ID')
 CLIENT_ID = os.getenv('COGNITO_CLIENT_ID')
 CLIENT_SECRET = os.getenv('COGNITO_CLIENT_SECRET')
+ISSUER = f"https://cognito-idp.{COGNITO_REGION}.amazonaws.com/{USER_POOL_ID}"
 JWKS_URL = f"https://cognito-idp.{COGNITO_REGION}.amazonaws.com/{USER_POOL_ID}/.well-known/jwks.json"
 
 jwks_client = PyJWKClient(JWKS_URL)
@@ -40,8 +41,10 @@ def validar_token_jwt(request: Request):
             token,
             signing_key.key,
             algorithms=['RS256'],
-            audience=CLIENT_ID
+            issuer=ISSUER
         )
+        if payload.get("client_id") != CLIENT_ID:
+            raise jwt.InvalidTokenError("client_id inválido para este token.")
         return payload
     except jwt.InvalidTokenError:
         raise HTTPException(
