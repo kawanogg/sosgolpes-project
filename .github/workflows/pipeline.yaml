@@ -162,7 +162,16 @@ jobs:
 
       - name: Subir aplicação a partir do Docker Hub
         run: |
+          EXTRA_ARGS=""
+          if [ "${{ matrix.service }}" = "user" ]; then
+            mkdir -p /tmp/sos-golpes-keys
+            openssl genpkey -algorithm RSA -out /tmp/sos-golpes-keys/private_key.pem -pkeyopt rsa_keygen_bits:2048
+            chmod 644 /tmp/sos-golpes-keys/private_key.pem
+            EXTRA_ARGS="-v /tmp/sos-golpes-keys/private_key.pem:/var/keys/private_key.pem:ro"
+          fi
+
           docker run -d -p 8000:8000 --network=host \
+            $EXTRA_ARGS \
             --name sos-golpes-${{ matrix.service }} \
             ${{ secrets.DOCKER_USERNAME }}/sos-golpes-${{ matrix.service }}:${{ github.sha }}
           sleep 15

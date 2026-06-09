@@ -3,9 +3,48 @@ import hashlib
 import os
 import bcrypt
 from fastapi import HTTPException
-from cryptography.hazmat.primitives import serialization
+from cryptography.hazmat.primitives import serialization, hashes, padding as sym_padding
 from cryptography.hazmat.primitives.asymmetric import padding as crypto_padding
+from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
 from cryptography.hazmat.backends import default_backend
+
+CAMINHO_CHAVE_PUBLICA = '/var/keys/public_key.pem'
+
+
+def carregar_chave_publica():
+    if not os.path.exists(CAMINHO_CHAVE_PUBLICA):
+        raise HTTPException(status_code=500, detail="Chave publica nao encontrada.")
+    with open(CAMINHO_CHAVE_PUBLICA, "rb") as f:
+        return serialization.load_pem_public_key(f.read(), backend=default_backend())
+
+def cifrar_hibrido(campos: dict) -> tuple[dict, str]:
+    aes_key = os.urandom(32)
+
+    campos_cifrados = {}
+    for nome, valor in campos.items():
+        texto = "" if valor is None else str(valor)
+
+        iv = os.urandom(16)
+        padder = sym_padding.PKCS7(algorithms.AES.block_size).padder()
+        dados_preenchidos = padder.update(texto.encode("utf-8")) + padder.finalize()
+
+        cifrador = Cipher(
+            algorithms.AES(aes_key), modes.CBC(iv), backend=default_backend()
+        ).encryptor()
+        ciphertext = cifrador.update(dados_preenchidos) + cifrador.finalize()
+
+        campos_cifrados[nome] = base64.b64encode(iv + ciphertext).decode("utf-8")
+
+    chave_publica = carregar_chave_publica()
+    chave_aes_cifrada = chave_publica.encrypt(
+        aes_key,
+        crypto_padding.OAEP(
+            mgf=crypto_padding.MGF1(algorithm=hashes.SHA256()),
+            algorithm=hashes.SHA256(),
+            label=None,
+        ),
+    )
+    return campos_cifrados, base64.b64encode(chave_aes_cifrada).decode("utf-8")
 
 def descriptografar_e_gerar_hash(dados_b64: str) -> str:
     caminho_chave_privada = '/var/keys/private_key.pem'

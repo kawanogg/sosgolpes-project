@@ -28,6 +28,7 @@ CREATE TABLE Analise_Link (
     url_analisada TEXT NOT NULL,
     nivel_perigo ENUM('Seguro', 'Suspeito', 'Malicioso') NOT NULL,
     detalhes_analise TEXT,
+    chave_cifrada TEXT,
     data_consulta TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (id_usuario) REFERENCES Usuario(id_usuario) ON DELETE SET NULL
 );

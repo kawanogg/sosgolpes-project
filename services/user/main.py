@@ -10,6 +10,7 @@ import mysql.connector
 
 from db.connect_db import get_db
 from helpers.auth import requer_cidadao
+from helpers.crypto import decifrar_hibrido
 
 cognito_client = boto3.client('cognito-idp', region_name='us-east-2')
 USER_POOL_ID = os.getenv('COGNITO_USER_POOL_ID')
@@ -79,7 +80,7 @@ async def user_history(usuario: dict = Depends(requer_cidadao), db=Depends(get_d
             return {"status": "sucesso", "historico": []}
 
         cursor.execute(
-            "SELECT url_analisada, nivel_perigo, detalhes_analise, data_consulta "
+            "SELECT url_analisada, nivel_perigo, detalhes_analise, data_consulta, chave_cifrada "
             "FROM Analise_Link WHERE id_usuario = %s ORDER BY data_consulta DESC LIMIT 50",
             (usuario_db["id_usuario"],)
         )
@@ -87,10 +88,21 @@ async def user_history(usuario: dict = Depends(requer_cidadao), db=Depends(get_d
 
         historico = []
         for reg in registros:
+            url = reg["url_analisada"]
+            detalhes = reg["detalhes_analise"]
+
+            if reg.get("chave_cifrada"):
+                try:
+                    url = decifrar_hibrido(reg["url_analisada"], reg["chave_cifrada"])
+                    if reg["detalhes_analise"]:
+                        detalhes = decifrar_hibrido(reg["detalhes_analise"], reg["chave_cifrada"])
+                except Exception as dec_err:
+                    print(f"Erro ao decifrar registro de historico: {dec_err}")
+
             historico.append({
-                "url": reg["url_analisada"],
+                "url": url,
                 "nivel": reg["nivel_perigo"],
-                "detalhes": reg["detalhes_analise"],
+                "detalhes": detalhes,
                 "data": reg["data_consulta"].isoformat() if reg["data_consulta"] else None
             })
 

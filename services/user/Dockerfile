@@ -19,6 +19,11 @@ COPY . /app
 RUN dos2unix /app/entrypoint.sh && chmod +x /app/entrypoint.sh
 
 RUN chown -R appuser:appuser /app
+
+RUN mkdir /var/keys
+
+RUN chown appuser:appuser /var/keys
+
 USER appuser
 
 EXPOSE 8000
