@@ -16,7 +16,7 @@ from helpers.analise_links import (
     analisar_virus_total
 )
 
-from helpers.crypto import descriptografar_e_gerar_hash
+from helpers.crypto import descriptografar_e_gerar_hash, cifrar_hibrido
 from helpers.auth import extrair_usuario_opcional, resolver_email_cognito
 
 app = FastAPI()
@@ -136,8 +136,8 @@ async def analisar_link(request: Request, db=Depends(get_db)):
                     if not usuario_db:
                         print(f"[HISTORICO] Criando usuario no DB: {email_usuario}")
                         cursor.execute(
-                            "INSERT INTO Usuario (id_perfil, nome, email, senha_hash) VALUES (2, %s, %s, %s)",
-                            (nome_usuario, email_usuario, 'COGNITO_MANAGED')
+                            "INSERT INTO Usuario (id_perfil, nome, email) VALUES (2, %s, %s)",
+                            (nome_usuario, email_usuario)
                         )
                         db.commit()
                         cursor.execute("SELECT id_usuario FROM Usuario WHERE email = %s", (email_usuario,))
@@ -152,12 +152,18 @@ async def analisar_link(request: Request, db=Depends(get_db)):
                             "google_safe_browsing": gsb.get("pontuacao", 0),
                             "virus_total": vt.get("pontuacao", 0),
                         })
+
+                        campos_cifrados, chave_cifrada = cifrar_hibrido({
+                            "url": url_crua,
+                            "detalhes": detalhes,
+                        })
+
                         cursor.execute(
-                            "INSERT INTO Analise_Link (id_usuario, url_analisada, nivel_perigo, detalhes_analise) VALUES (%s, %s, %s, %s)",
-                            (usuario_db["id_usuario"], url_crua, nivel, detalhes)
+                            "INSERT INTO Analise_Link (id_usuario, url_analisada, nivel_perigo, detalhes_analise, chave_cifrada) VALUES (%s, %s, %s, %s, %s)",
+                            (usuario_db["id_usuario"], campos_cifrados["url"], nivel, campos_cifrados["detalhes"], chave_cifrada)
                         )
                         db.commit()
-                        print(f"[HISTORICO] Registro salvo com sucesso.")
+                        print(f"[HISTORICO] Registro salvo com sucesso (cifrado).")
         else:
             print("[HISTORICO] JWT nao disponivel, historico nao salvo.")
     except Exception as hist_err:
