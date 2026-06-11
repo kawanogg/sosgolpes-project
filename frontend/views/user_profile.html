@@ -18,8 +18,21 @@
                 <h2>Perfil</h2>
             </div>
             <div class="cartao cartao-perfil" id="perfilUser">
-                
             </div>
+            <form id="formularioEdicaoPerfil" style="display: none;">
+                <div class="cartao cartao-formulario">
+                    <div class="grupo-formulario">
+                        <label for="nomeEditInput"> Nome: </label>
+                        <div class="envoltorio-entrada">
+                            <input type="text" id="nomeEditInput" name="nome" required>
+                        </div>
+                    </div>
+
+                    <button type="submit" id="btnEdicaoPerfil" class="botao botao-primario">
+                        Confirmar Edição
+                    </button>
+                </div>
+            </form>
         </section>
     </main>
     <script src="/js/nav_bar.js"></script>

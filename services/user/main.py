@@ -56,6 +56,39 @@ async def user_profile(usuario: dict = Depends(requer_cidadao), db=Depends(get_d
     except Exception as e:
         raise HTTPException(status_code=500, detail="Erro interno ao buscar dados do perfil.")
 
+@app.post("/api/user/editar_perfil")
+async def editar_perfil(request: Request, usuario: dict = Depends(requer_cidadao), db = Depends(get_db)):
+    cognito_username = usuario.get("username")
+
+    if not cognito_username:
+        raise HTTPException(status_code=400, detail="Usuário não identificado.")
+    try:
+        dados = await request.json()
+        nome = dados.get("nome").strip()
+
+        if not nome:
+            raise HTTPException(status_code=400, detail="Nome é obrigatório.")
+
+        response_cognito = cognito_client.admin_update_user_attributes(
+            UserPoolId=USER_POOL_ID,
+            Username=cognito_username,
+            UserAttributes=[
+                {
+                    'Name': 'name',
+                    'Value': nome
+                }
+            ]
+        )
+
+        cursor = db.cursor(dictionary=True)
+        cursor.execute("UPDATE Usuario SET nome=%s WHERE email=%s", (nome, cognito_username))
+        usuario_db = cursor.fetchone()
+
+        if not usuario_db:
+            return {"status": "sucesso"}
+    except Exception as e:
+        print(f"Erro ao editar perfil: {e}")
+        raise HTTPException(status_code=500, detail="Erro interno ao editar perfil.")
 
 @app.get("/api/user/history")
 async def user_history(usuario: dict = Depends(requer_cidadao), db=Depends(get_db)):
