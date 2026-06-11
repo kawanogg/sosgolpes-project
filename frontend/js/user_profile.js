@@ -53,27 +53,29 @@ document.addEventListener('DOMContentLoaded', async function() {
     }
 });
 
-document.getElementById('btnEdicaoPerfil').addEventListener('submit', async function (e) {
+document.getElementById('formularioEdicaoPerfil').addEventListener('submit', async function (e) {
     e.preventDefault();
 
     const novoNome = document.getElementById("nomeEditInput").value.trim();
-    const novoSobrenome = document.getElementById("sobrenomeEditInput").value.trim()
 
-    if (novoNome) editaPerfil(novoNome, novoSobrenome);
+    if (novoNome) editaPerfil(novoNome);
 });
 
-async function editaPerfil(nome, sobrenome) {
+async function editaPerfil(nome) {
     try {
-        const resp = await fetch('api/user/editar_perfil', {
+        const resp = await fetch('/api/user/editar_perfil', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json'},
             body: JSON.stringify({
-                nome: nome,
-                sohbrenome: sobrenome
+                nome: nome
             })
         });
 
         const dados = await resp.json();
+
+        if (resp.ok && dados.status === 'sucesso') {
+            location.reload();
+        }
     }
     catch {
         console.log("Erro ao conectar com a API");
