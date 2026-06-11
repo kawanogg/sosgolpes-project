@@ -65,6 +65,15 @@ services:
       db:
         condition: service_healthy
 
+  reports-service:
+    build: ./services/reports
+    container_name: sos_golpes_reports
+    env_file:
+      - .env
+    depends_on:
+      db:
+        condition: service_healthy
+
   db:
     image: mysql:8.0
     container_name: sos_golpes_db

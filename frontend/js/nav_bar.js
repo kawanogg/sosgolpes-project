@@ -6,6 +6,7 @@ document.addEventListener('DOMContentLoaded', async function() {
     let linksHTML = `
         <li><a href="/link_analysis" class="${paginaAtual === '/link_analysis' ? 'ativo' : ''}">Analisar Link</a></li>
         <li><a href="/password_checker" class="${paginaAtual === '/password_checker' ? 'ativo' : ''}">Auditoria de Senha</a></li>
+        <li><a href="/report_link" class="${paginaAtual === '/report_link' ? 'ativo' : ''}">Denunciar Link</a></li>
     `;
 
     if (isLoggedIn === 'true') {

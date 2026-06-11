@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Denunciar Link ou Golpe</title>
+    <link rel="stylesheet" href="/css/style.css">
+    <style>
+        .report-container {
+            max-width: 800px;
+            margin: 40px auto;
+            padding: 30px;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .report-header {
+            margin-bottom: 30px;
+        }
+
+        .report-header h1 {
+            color: #d9534f;
+            margin-bottom: 10px;
+        }
+
+        .report-header p {
+            color: #666;
+            font-size: 16px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: #333;
+            font-weight: 500;
+        }
+
+        .form-group input[type="text"],
+        .form-group input[type="url"],
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-family: Arial, sans-serif;
+            font-size: 14px;
+            box-sizing: border-box;
+            transition: border-color 0.3s;
+        }
+
+        .form-group input[type="text"]:focus,
+        .form-group input[type="url"]:focus,
+        .form-group select:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: #d9534f;
+            box-shadow: 0 0 5px rgba(217, 83, 79, 0.3);
+        }
+
+        .form-group textarea {
+            resize: vertical;
+            min-height: 150px;
+        }
+
+        .form-group small {
+            display: block;
+            margin-top: 5px;
+            color: #999;
+            font-size: 12px;
+        }
+
+        .anonymous-note {
+            padding: 15px;
+            background: #e8f4f8;
+            border-left: 4px solid #3498db;
+            margin-bottom: 20px;
+            border-radius: 4px;
+        }
+
+        .anonymous-note p {
+            margin: 0;
+            color: #2c3e50;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 10px;
+            margin-top: 30px;
+        }
+
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 4px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .btn-primary {
+            background: #d9534f;
+            color: white;
+            flex: 1;
+        }
+
+        .btn-primary:hover {
+            background: #c9302c;
+        }
+
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+            flex: 1;
+        }
+
+        .btn-secondary:hover {
+            background: #5a6268;
+        }
+
+        .alert {
+            padding: 15px;
+            margin-bottom: 20px;
+            border-radius: 4px;
+            display: none;
+        }
+
+        .alert-success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+            display: none;
+        }
+
+        .alert-error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+            display: none;
+        }
+
+        .alert.show {
+            display: block;
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 20px;
+        }
+
+        .loading.show {
+            display: block;
+        }
+
+        .spinner {
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #d9534f;
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 10px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .my-reports-section {
+            margin-top: 50px;
+            padding-top: 30px;
+            border-top: 2px solid #eee;
+        }
+
+        .report-item {
+            background: #f9f9f9;
+            padding: 15px;
+            margin-bottom: 15px;
+            border-radius: 4px;
+            border-left: 4px solid #d9534f;
+        }
+
+        .report-item .status {
+            display: inline-block;
+            padding: 5px 10px;
+            border-radius: 3px;
+            font-size: 12px;
+            font-weight: bold;
+            margin-top: 10px;
+        }
+
+        .status-pendente {
+            background: #fff3cd;
+            color: #856404;
+        }
+
+        .status-analisando {
+            background: #cce5ff;
+            color: #004085;
+        }
+
+        .status-confirmado {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .status-falso-positivo {
+            background: #d1ecf1;
+            color: #0c5460;
+        }
+    </style>
+</head>
+<body>
+    <nav id="navbar"></nav>
+
+    <div class="report-container">
+        <div class="report-header">
+            <h1>🚨 Denunciar Link ou Golpe</h1>
+            <p>Ajude a comunidade reportando links suspeitos, phishing e outras formas de golpe.</p>
+        </div>
+
+        <div class="anonymous-note">
+            <p>💡 <strong>Denúncias anônimas são bem-vindas!</strong> Você pode denunciar com ou sem fazer login.</p>
+        </div>
+
+        <div id="alert-success" class="alert alert-success"></div>
+        <div id="alert-error" class="alert alert-error"></div>
+
+        <form id="reportForm" onsubmit="submitReport(event)">
+            <div class="form-group">
+                <label for="link">Link Suspeito <span style="color: red;">*</span></label>
+                <input 
+                    type="url" 
+                    id="link" 
+                    name="link" 
+                    placeholder="https://exemplo-suspeito.com" 
+                    required
+                >
+                <small>Inclua http:// ou https://</small>
+            </div>
+
+            <div class="form-group">
+                <label for="tipo_golpe">Tipo de Golpe <span style="color: red;">*</span></label>
+                <select id="tipo_golpe" name="tipo_golpe" required>
+                    <option value="">Selecione um tipo...</option>
+                    <option value="Phishing">Phishing (roubo de credenciais)</option>
+                    <option value="Quishing">QR Code Malicioso (Quishing)</option>
+                    <option value="Malware">Malware/Vírus</option>
+                    <option value="Ransomware">Ransomware</option>
+                    <option value="Fraude">Fraude/Scam</option>
+                    <option value="Clonagem de Site">Clonagem de Site</option>
+                    <option value="Outro">Outro</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="comentarios">Comentários/Detalhes</label>
+                <textarea 
+                    id="comentarios" 
+                    name="comentarios" 
+                    placeholder="Descreva o que você viu de suspeito neste link. Máximo 2000 caracteres."
+                ></textarea>
+                <small>Adicione informações que ajudem na análise (ex: prometia prêmios, pedia dados bancários, etc.)</small>
+            </div>
+
+            <div class="button-group">
+                <button type="submit" class="btn btn-primary">Enviar Denúncia</button>
+                <button type="reset" class="btn btn-secondary">Limpar</button>
+            </div>
+        </form>
+
+        <div class="loading" id="loading">
+            <div class="spinner"></div>
+            <p>Processando sua denúncia...</p>
+        </div>
+
+        <div class="my-reports-section" id="myReportsSection" style="display: none;">
+            <h2>Suas Denúncias</h2>
+            <div id="myReportsList"></div>
+        </div>
+    </div>
+
+    <script src="/js/nav_bar.js"></script>
+    <script src="/js/report_link.js"></script>
+</body>
+</html>
