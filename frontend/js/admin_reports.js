@@ -102,7 +102,8 @@ function updateStats(data) {
         </div>
     `;
 
-    statsDiv.innerHTML = html;
+    num.textContent = value;
+    statsDiv.appendChild(card);
 }
 
 function displayAllReports() {
@@ -166,7 +167,9 @@ function displayReports(reports) {
         `;
     });
 
-    container.innerHTML = html;
+    code.textContent = report.link_denunciado;
+    commText.textContent = report.comentarios;   
+    btnEdit.addEventListener('click', () => openStatusModal(report.id_denuncia));
 }
 
 function filterReports() {
