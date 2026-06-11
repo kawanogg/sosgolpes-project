@@ -68,7 +68,7 @@ docker-compose down -v
 - [ ] Edicao de Perfil do Usuario
 - [x] Historico de pesquisas anteriores *(tem o botao "Meu Historico", mas eh dummy :\))*
 - [x] Alertas de Riscos
-- [ ] Denuncia de links e golpes
+- [x] Denuncia de links e golpes
 
 ### Fase 1: Autenticacao e Controle de Acesso
 
