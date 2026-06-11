@@ -42,6 +42,18 @@ CREATE TABLE Log_Acesso (
     FOREIGN KEY (id_usuario) REFERENCES Usuario(id_usuario) ON DELETE SET NULL
 );
 
+CREATE TABLE Denuncia_Link (
+    id_denuncia INT AUTO_INCREMENT PRIMARY KEY,
+    email_denunciante VARCHAR(255) DEFAULT 'Anônimo',
+    denuncia_status VARCHAR(50)  DEFAULT 'Pendente',
+    link_denunciado TEXT NOT NULL,
+    tipo_golpe VARCHAR(100) NOT NULL,
+    comentarios TEXT,
+    endereco_ip VARCHAR(45) NOT NULL,
+    data_denuncia TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    INDEX idx_data (data_denuncia)
+);
+
 INSERT INTO Perfil (nome_perfil) VALUES ('Administrador'), ('Cidadao');
 
 INSERT INTO Registro_Leak (senha_vazada_hash, fonte_vazamento) VALUES 

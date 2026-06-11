@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Painel de Denúncias - Admin</title>
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+    <nav id="navbar"></nav>
+
+    <div class="admin-container">
+        <div class="admin-header">
+            <h1>Painel de Denúncias</h1>
+            <button class="btn btn-primary" onclick="reloadReports()">Atualizar</button>
+        </div>
+
+        <div id="alert-success" class="alert alert-success"></div>
+        <div id="alert-error" class="alert alert-error"></div>
+
+        <div class="filter-section">
+            <select id="filterStatus" onchange="filterReports()">
+                <option value="">Todos os Status</option>
+                <option value="Pendente">Pendente</option>
+            </select>
+            <input type="search" id="searchBox" placeholder="Buscar por link..." onkeyup="filterReports()">
+            <button onclick="reloadReports()">Buscar</button>
+        </div>
+
+        <div class="stats" id="stats"></div>
+
+        <div id="loading" class="loading" style="display: none;">
+            <div class="spinner"></div>
+            <p>Carregando denúncias...</p>
+        </div>
+
+        <div id="reports-container" class="reports-list"></div>
+    </div>
+
+    </div>
+
+    <script src="/js/nav_bar.js"></script>
+    <script src="/js/admin_reports.js"></script>
+</body>
+</html>
