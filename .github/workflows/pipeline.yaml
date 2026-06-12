@@ -113,7 +113,7 @@ jobs:
 
   build-service-matrix:
     name: Build Service Matrix
-    needs: [UnitTests, Bandit, SnykSAST, SnykSCA, SemgrepSAST]
+    needs: [TestesUnitarios, Bandit, SnykSAST, SnykSCA, SemgrepSAST]
     runs-on: ubuntu-latest
     strategy:
       matrix:
@@ -138,7 +138,7 @@ jobs:
 
   build-infra-matrix:
     name: Build Infra Matrix
-    needs: [UnitTests, Bandit, SnykSAST, SnykSCA, SemgrepSAST]
+    needs: [TestesUnitarios, Bandit, SnykSAST, SnykSCA, SemgrepSAST]
     runs-on: ubuntu-latest
     strategy:
       matrix:
