@@ -9,7 +9,12 @@ document.addEventListener('DOMContentLoaded', function() {
 let sessaoAtual = null;
 let emailAtual = null;
 
-document.getElementById('formularioLogin').addEventListener('submit', async function(e) {
+const formLogin = document.getElementById('formularioLogin');
+const formNovaSenha = document.getElementById('formularioNovaSenha');
+const formSetupMFA = document.getElementById('formularioSetupMFA');
+const formVerificaMFA = document.getElementById('formularioVerificaMFA');
+
+formLogin.addEventListener('submit', async function(e) {
     e.preventDefault();
 
     const email = document.getElementById('emailInput').value.trim();
@@ -18,7 +23,7 @@ document.getElementById('formularioLogin').addEventListener('submit', async func
     if (email && senha) login(email, senha);
 });
 
-document.getElementById('formularioNovaSenha').addEventListener('submit', async function(e) {
+formNovaSenha.addEventListener('submit', async function(e) {
     e.preventDefault();
 
     const nome = document.getElementById('nomeInput').value.trim();
@@ -31,17 +36,64 @@ document.getElementById('formularioNovaSenha').addEventListener('submit', async 
     }
 });
 
-document.getElementById('btnCancelarNovaSenha').addEventListener('click', function() {
-    document.getElementById('formularioNovaSenha').style.display = 'none';
-    document.getElementById('formularioLogin').style.display = 'block';
+formSetupMFA.addEventListener('submit', async function(e) {
+    e.preventDefault();
+    const codigoMFA = document.getElementById('codigoSetupInput').value.trim();
 
-    sessaoAtual = null;
-    emailAtual = null;
-    document.getElementById('nomeInput').value = '';
-    document.getElementById('novaSenhaInput').value = '';
-    document.getElementById('confirmaSenhaInput').value = '';
-    
-})
+    if (codigoMFA) setupMFA(codigoMFA);
+});
+
+formVerificaMFA.addEventListener('submit', async function(e) {
+    e.preventDefault();
+    const codigoMFA = document.getElementById('codigoVerificaInput').value.trim();
+
+    if (codigoMFA) verificaMFA(codigoMFA);
+});
+
+document.querySelectorAll('.cancelar-fluxo').forEach(btn => {
+    btn.addEventListener('click', resetarFluxo);
+});
+
+function processarResposta(dados) {
+    if (dados.status === 'sucesso') {
+        sessaoAtual = null;
+        emailAtual = null;
+        localStorage.setItem('is_logged_in', 'true');
+        window.location.href = "/";
+        
+    } else if (dados.status === 'desafio_nova_senha') {
+        sessaoAtual = dados.session;
+        emailAtual = dados.email;
+        esconderTodosFormularios();
+        formNovaSenha.style.display = 'block';
+        
+    } else if (dados.status === 'setup_mfa') {
+        sessaoAtual = dados.session;
+        emailAtual = dados.email;
+        esconderTodosFormularios();
+        formSetupMFA.style.display = 'block';
+        
+        document.getElementById('textoCodigoSecreto').innerText = dados.totp_secret;
+        
+        const otpAuthUrl = `otpauth://totp/SOSGolpes:${emailAtual}?secret=${dados.totp_secret}&issuer=SOSGolpes`;
+        document.getElementById('qrcode-container').innerHTML = '';
+        new QRCode(document.getElementById("qrcode-container"), {
+            text: otpAuthUrl,
+            width: 150,
+            height: 150
+        });
+        
+    } else if (dados.status === 'desafio_mfa') {
+        sessaoAtual = dados.session;
+        emailAtual = dados.email;
+        esconderTodosFormularios();
+        formVerificaMFA.style.display = 'block';
+        
+    } else {
+        alert(dados.mensagem || "Ocorreu um erro desconhecido.");
+        resetarFluxo();
+    }
+}
 
 async function login(email, senha) {
     try {
@@ -56,22 +108,15 @@ async function login(email, senha) {
 
         const dados = await resp.json();
 
-        if (resp.ok && dados.status === 'sucesso') {
-            localStorage.setItem('is_logged_in', 'true');
-            window.location.href = "/"
-        } else if (resp.ok && dados.status === 'desafio'){
-            sessaoAtual = dados.session;
-            emailAtual = dados.email;
-
-            document.getElementById('formularioLogin').style.display = 'none';
-            document.getElementById('formularioNovaSenha').style.display = 'block';
-            alert("Como este é seu primeiro acesso, defina uma nova senha definitiva.");
+        if (resp.ok) {
+            processarResposta(dados)
         } else {
             alert("Erro ao fazer login, verifique suas credenciais");
         }
-
     } catch (err) {
         console.log("Erro ao conectar com a API")
+        console.log(err)
+        alert("Erro ao conectar com a API");
     }
     
 }
@@ -91,16 +136,79 @@ async function enviarNovaSenha(nome, novaSenha) {
 
         const dados = await resp.json();
 
-        if (resp.ok && dados.status === 'sucesso') {
-            sessaoAtual = null;
-            emailAtual = null;
-            
-            localStorage.setItem('is_logged_in', 'true');
-            window.location.href = "/";
+        if (resp.ok) {
+            processarResposta(dados);
         } else {
             alert("Erro ao atualizar a senha. Tente novamente.");
         }
     } catch (err) {
         console.log("Erro ao conectar com a API");
     }
+}
+
+async function setupMFA(codigoMFA) {
+    try {
+        const resp = await fetch('/api/auth/setup-mfa', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json'},
+            body: JSON.stringify({
+                email: emailAtual,
+                codigo_mfa: codigoMFA,
+                session: sessaoAtual
+            })
+        });
+
+        const dados = await resp.json();
+        if (resp.ok) {
+            processarResposta(dados);
+        } else {
+            alert("Código MFA inválido. Tente novamente.");
+        }
+    } catch (err) {
+        alert("Erro ao conectar com a API");
+    }
+}
+
+async function verificaMFA(codigoMFA) {
+    try {
+        const resp = await fetch('/api/auth/verificar-mfa', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json'},
+            body: JSON.stringify({
+                email: emailAtual,
+                codigo_mfa: codigoMFA,
+                session: sessaoAtual
+            })
+        });
+
+        const dados = await resp.json();
+        if (resp.ok) {
+            processarResposta(dados);
+        } else {
+            alert(dados.detail || "Código MFA inválido ou expirado.");
+        }
+    } catch (err) {
+        alert("Erro ao conectar com a API");
+    }
+}
+
+function esconderTodosFormularios() {
+    formLogin.style.display = 'none';
+    formNovaSenha.style.display = 'none';
+    formSetupMFA.style.display = 'none';
+    formVerificaMFA.style.display = 'none';
+}
+
+function resetarFluxo() {
+    esconderTodosFormularios();
+    formLogin.style.display = 'block';
+    sessaoAtual = null;
+    emailAtual = null;
+    
+    document.getElementById('passwordInput').value = '';
+    document.getElementById('novaSenhaInput').value = '';
+    document.getElementById('confirmaSenhaInput').value = '';
+    document.getElementById('codigoSetupInput').value = '';
+    document.getElementById('codigoVerificaInput').value = '';
+    document.getElementById('qrcode-container').innerHTML = ''; 
 }

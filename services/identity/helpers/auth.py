@@ -1,4 +1,4 @@
-from fastapi import Depends, HTTPException, Security, status, Request
+from fastapi import Depends, HTTPException, Security, status, Request, Response
 from jwt import PyJWKClient
 import jwt
 import os
@@ -61,3 +61,59 @@ def requer_admin(payload: dict = Depends(validar_token_jwt)):
             detail="Acesso negado. Acesso restrito a Administradores."
         )
     return payload
+
+def processa_resposta_cognito(cognito_client, response_cognito: dict, response: Response, email: str):
+    if 'ChallengeName' in response_cognito:
+        challenge = response_cognito['ChallengeName']
+        session = response_cognito['Session']
+
+        if challenge == 'NEW_PASSWORD_REQUIRED':
+            return {
+                "status": "desafio_nova_senha",
+                "mensagem": "Troca de senha inicial obrigatória",
+                "session": session,
+                "email": email
+            }
+        elif challenge == 'SOFTWARE_TOKEN_MFA':
+            return {
+                "status": "desafio_mfa",
+                "mensagem": "Insira o código do seu aplicativo autenticador.",
+                "session": session,
+                "email": email
+            }
+        elif challenge == 'MFA_SETUP':
+
+            totp_response = cognito_client.associate_software_token(Session=session)
+            return {
+                "status": "setup_mfa",
+                "mensagem": "Configuração de MFA obrigatória. Escaneie o QR Code.",
+                "totp_secret": totp_response['SecretCode'],
+                "session": totp_response['Session'],
+                "email": email
+            }
+        else:
+            raise HTTPException(status_code=500, detail=f"Desafio não suportado: {challenge}")
+    elif 'AuthenticationResult' in response_cognito:
+        resultado_auth = response_cognito['AuthenticationResult']
+
+        response.set_cookie(
+            key="access_token",
+            value=resultado_auth['AccessToken'],
+            httponly=True,
+            secure=True,
+            samesite="lax",
+            max_age=resultado_auth['ExpiresIn']
+        )
+
+        response.set_cookie(
+            key="refresh_token",
+            value=resultado_auth['RefreshToken'],
+            httponly=True,
+            secure=True,
+            samesite="lax",
+            max_age=5*24*60*60
+        )
+        
+        return {"status": "sucesso", "mensagem": "Login realizado com sucesso!"}
+    else:
+        raise HTTPException(status_code=500, detail="Resposta inesperada do Cognito.")
