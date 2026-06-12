@@ -533,3 +533,9 @@ input[type="password"]:focus, input[type="text"]:focus {
     color: #6b7280;
     padding: 2rem 0;
 }
+
+.qrcode-container {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 20px;
+}

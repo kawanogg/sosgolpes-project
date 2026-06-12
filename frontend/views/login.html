@@ -63,9 +63,44 @@
                         Confirmar Nova Senha
                     </button>
                     
-                    <button type="button" id="btnCancelarNovaSenha" class="botao botao-secundario" style="margin-top: 10px; width: 100%;">
+                    <button type="button" id="btnCancelarNovaSenha" class="botao botao-secundario cancelar-fluxo">
                         Cancelar
                     </button>
+                </form>
+
+                <form id="formularioSetupMFA" style="display: none;">
+                    <p style="margin-bottom: 20px; color: #555; text-align: center;">
+                        Configure a Autenticação de Dois Fatores (MFA). Escaneie o QR Code usando um app como Google Authenticator ou Authy.
+                    </p>
+                    
+                    <div id="qrcode-container" class="qrcode-container"></div>
+                    
+                    <p style="text-align: center; font-size: 0.9em; color: #777;">
+                        Ou insira este código manualmente: <strong id="textoCodigoSecreto"></strong>
+                    </p>
+
+                    <div class="grupo-formulario">
+                        <label for="codigoSetupInput">Código de 6 dígitos:</label>
+                        <div class="envoltorio-entrada">
+                            <input type="text" id="codigoSetupInput" placeholder="Ex: 123456" maxlength="6" required>
+                        </div>
+                    </div>
+                    <button type="submit" class="botao botao-primario">Verificar e Ativar MFA</button>
+                    <button type="button" class="botao botao-secundario cancelar-fluxo" style="margin-top: 10px; width: 100%;">Cancelar</button>
+                </form>
+
+                <form id="formularioVerificaMFA" style="display: none;">
+                    <p style="margin-bottom: 20px; color: #555; text-align: center;">
+                        Insira o código de 6 dígitos gerado pelo seu aplicativo autenticador.
+                    </p>
+                    <div class="grupo-formulario">
+                        <label for="codigoVerificaInput">Código de Segurança:</label>
+                        <div class="envoltorio-entrada">
+                            <input type="text" id="codigoVerificaInput" placeholder="Ex: 123456" maxlength="6" required>
+                        </div>
+                    </div>
+                    <button type="submit" class="botao botao-primario">Acessar Sistema</button>
+                    <button type="button" class="botao botao-secundario cancelar-fluxo" style="margin-top: 10px; width: 100%;">Voltar</button>
                 </form>
             </div>
         </section>
@@ -78,7 +113,7 @@
     </footer>
 
     <script src="/js/nav_bar.js"></script>
-    <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
     <script src="/js/login.js"></script>
 </body>
 </html>
