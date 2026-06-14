@@ -65,7 +65,7 @@ docker-compose down -v
 
 - [x] Validacao de QR Codes
 - [x] Estatisticas de Tipo de Ameaca *(painel geral e agregação por nível de ameaça implementados no microserviço de admin)*
-- [ ] Edicao de Perfil do Usuario
+- [x] Edicao de Perfil do Usuario
 - [x] Historico de pesquisas anteriores *(tem o botao "Meu Historico", mas eh dummy :\))*
 - [x] Alertas de Riscos
 - [x] Denuncia de links e golpes
@@ -74,7 +74,7 @@ docker-compose down -v
 
 - [x] Login com Amazon Cognito
 - [x] Registro de usuario com hash BCRYPT
-- [ ] Duplo fator de autenticacao — TOTP *(falta fluxo completo no login)*
+- [x] Duplo fator de autenticacao — TOTP *(falta fluxo completo no login)*
 - [x] Middleware RBAC nas rotas da API (Administrador / Cidadao)
 - [x] Controle de sessao (JWT)
 
@@ -109,12 +109,12 @@ docker-compose down -v
 
 ### Fase 7: Arquitetura e Infraestrutura
 
-- [ ] Migrar de monolito para microservicos (front, back, features tudo em microservico)
-- [ ] Comunicacao REST entre microservicos
+- [x] Migrar de monolito para microservicos (front, back, features tudo em microservico)
+- [x] Comunicacao REST entre microservicos
 - [ ] Deployments (nao Pods estaticos)
-- [ ] Services para interconexao entre componentes
+- [x] Services para interconexao entre componentes
 - [ ] Disponibilidade/redundancia
-- [ ] Dockerfiles separados por microservico
+- [x] Dockerfiles separados por microservico
 
 ---
 
