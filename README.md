@@ -94,8 +94,8 @@ docker-compose down -v
 
 ### Fase 4: Seguranca de Infraestrutura
 
-- [ ] Politica de seguranca de Pods
-- [ ] Criptografia para Kubernetes Secrets (encryption at rest)
+- [x] Politica de seguranca de Pods
+- [x] Criptografia para Kubernetes Secrets (encryption at rest)
 
 ### Fase 5: Experiencia do Usuario e Monitoramento
 
@@ -105,15 +105,15 @@ docker-compose down -v
 ### Fase 6: Pipeline CI/CD (completo)
 
 - [x] CI (SAST + SCA + Build)
-- [ ] CD (deploy automatizado para producao no K8s)
+- [x] CD (deploy automatizado para producao no K8s)
 
 ### Fase 7: Arquitetura e Infraestrutura
 
 - [x] Migrar de monolito para microservicos (front, back, features tudo em microservico)
 - [x] Comunicacao REST entre microservicos
-- [ ] Deployments (nao Pods estaticos)
+- [x] Deployments (nao Pods estaticos)
 - [x] Services para interconexao entre componentes
-- [ ] Disponibilidade/redundancia
+- [x] Disponibilidade/redundancia
 - [x] Dockerfiles separados por microservico
 
 ---

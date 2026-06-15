@@ -261,3 +261,49 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - run: echo "Todos os pushs para o Docker Hub da matriz passaram com sucesso"
+
+  deploy-kuber:
+    name: Deploy (CD) Kubernetes
+    needs: push
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Instalar kubectl
+        uses: azure/setup-kubectl@v4
+
+      - name: Configurar kubeconfig
+        run: |
+          mkdir -p "$HOME/.kube"
+          echo "${{ secrets.KUBE_CONFIG }}" | base64 -d > "$HOME/.kube/config"
+          chmod 600 "$HOME/.kube/config"
+
+      - name: Aplicar manifests
+        run: |
+          kubectl apply -f kubernetes/namespace.yaml
+          kubectl apply -f kubernetes/db/configmap-schema.yaml
+          kubectl apply -f kubernetes/db/pvc.yaml
+          kubectl apply -f kubernetes/db/deployment.yaml
+          kubectl apply -f kubernetes/db/service.yaml
+          for svc in identity user threat admin audit reports frontend; do
+            kubectl apply -f kubernetes/$svc/deployment.yaml
+            kubectl apply -f kubernetes/$svc/service.yaml
+          done
+          kubectl apply -f kubernetes/api-gateway/configmap-nginx.yaml
+          kubectl apply -f kubernetes/api-gateway/deployment.yaml
+          kubectl apply -f kubernetes/api-gateway/service.yaml
+
+      - name: Atualizar imagens para a tag do commit
+        run: |
+          for svc in identity user threat admin audit reports frontend api-gateway; do
+            kubectl -n sos-golpes set image deployment/$svc \
+              $svc=${{ secrets.DOCKER_USERNAME }}/sos-golpes-$svc:${{ github.sha }}
+          done
+
+      - name: Aguardar
+        run: |
+          for svc in identity user threat admin audit reports frontend api-gateway; do
+            kubectl -n sos-golpes rollout status deployment/$svc --timeout=180s
+          done
