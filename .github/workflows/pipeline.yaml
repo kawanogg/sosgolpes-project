@@ -226,7 +226,6 @@ jobs:
     name: Deploy (CD) Kubernetes
     needs: push
     runs-on: self-hosted
-    if: github.event_name == 'workflow_dispatch' || (github.ref == 'refs/heads/main' && github.event_name == 'push')
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -263,6 +262,16 @@ jobs:
             kubectl create secret generic rsa-keys -n sos-golpes \
               --from-file=private_key.pem=/tmp/private_key.pem \
               --from-file=public_key.pem=/tmp/public_key.pem
+          fi
+
+          if ! kubectl -n sos-golpes get secret gateway-tls >/dev/null 2>&1; then
+            openssl req -x509 -nodes -days 365 -newkey rsa:2048 \
+              -keyout /tmp/localhost-key.pem \
+              -out /tmp/localhost.pem \
+              -subj "/CN=localhost"
+            kubectl create secret tls gateway-tls -n sos-golpes \
+              --cert=/tmp/localhost.pem \
+              --key=/tmp/localhost-key.pem
           fi
 
       - name: Aplicar manifests

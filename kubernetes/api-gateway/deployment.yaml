@@ -29,7 +29,18 @@ spec:
               mountPath: /etc/nginx/nginx.conf
               subPath: nginx.conf
               readOnly: true
+            - name: tls-certs
+              mountPath: /etc/nginx/certs
+              readOnly: true
       volumes:
         - name: nginx-conf
           configMap:
             name: gateway-nginx
+        - name: tls-certs
+          secret:
+            secretName: gateway-tls
+            items:
+              - key: tls.crt
+                path: localhost.pem
+              - key: tls.key
+                path: localhost-key.pem
