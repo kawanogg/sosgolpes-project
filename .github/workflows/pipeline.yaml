@@ -5,6 +5,7 @@ on:
     branches: [main]
   pull_request:
     branches: [main]
+  workflow_dispatch:
 
 jobs:
   TestesUnitarios:
@@ -67,7 +68,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        service: [admin, audit, identity, threat, user]
+        service: [admin, audit, identity, reports, threat, user]
 
     steps:
       - name: Checkout código
@@ -117,7 +118,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        service: [admin, audit, identity, threat, user]
+        service: [admin, audit, identity, reports, threat, user]
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -168,54 +169,13 @@ jobs:
     steps:
       - run: echo "Todos os builds temporários foram enviados ao Docker Hub"
 
-  ZapDAST-matrix:
-    name: OWASP ZAP (DAST) Matrix
+  push-service-matrix:
+    name: Push Service Matrix
     needs: build
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        service: [admin, audit, identity, threat, user]
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Subir aplicação a partir do Docker Hub
-        run: |
-          EXTRA_ARGS=""
-          if [ "${{ matrix.service }}" = "user" ]; then
-            mkdir -p /tmp/sos-golpes-keys
-            openssl genpkey -algorithm RSA -out /tmp/sos-golpes-keys/private_key.pem -pkeyopt rsa_keygen_bits:2048
-            chmod 644 /tmp/sos-golpes-keys/private_key.pem
-            EXTRA_ARGS="-v /tmp/sos-golpes-keys/private_key.pem:/var/keys/private_key.pem:ro"
-          fi
-
-          docker run -d -p 8000:8000 --network=host \
-            $EXTRA_ARGS \
-            --name sos-golpes-${{ matrix.service }} \
-            ${{ secrets.DOCKER_USERNAME }}/sos-golpes-${{ matrix.service }}:${{ github.sha }}
-          sleep 15
-
-      - name: OWASP ZAP API Scan
-        uses: zaproxy/action-api-scan@v0.10.0
-        with:
-          target: "http://localhost:8000/openapi.json"
-          format: "openapi"
-          allow_issue_writing: false
-    
-  ZapDAST:
-    name: OWASP ZAP (DAST)
-    needs: ZapDAST-matrix
-    runs-on: ubuntu-latest
-    steps:
-      - run: echo "Todos os services passaram com sucesso (OWASP ZAP)"
-
-  push-service-matrix:
-    name: Push Service Matrix
-    needs: ZapDAST
-    runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        service: [admin, audit, identity, threat, user]
+        service: [admin, audit, identity, reports, threat, user]
     steps:
       - name: Login no Docker Hub
         uses: docker/login-action@v3
@@ -234,7 +194,7 @@ jobs:
   
   push-infra-matrix:
     name: Push Infra Matrix
-    needs: ZapDAST
+    needs: build
     runs-on: ubuntu-latest
     strategy:
       matrix:
@@ -261,3 +221,83 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - run: echo "Todos os pushs para o Docker Hub da matriz passaram com sucesso"
+
+  deploy-kuber:
+    name: Deploy (CD) Kubernetes
+    needs: push
+    runs-on: self-hosted
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Garantir cluster kind (sosgolpes)
+        run: |
+          if ! kind get clusters | grep -qx sosgolpes; then
+            kind create cluster --name sosgolpes --config kubernetes/kind-cluster.yaml
+          fi
+          kubectl config use-context kind-sosgolpes
+
+      - name: Config dos Secrets
+        run: |
+          kubectl apply -f kubernetes/namespace.yaml
+
+          kubectl create secret generic db-secret -n sos-golpes \
+            --from-literal=MYSQL_ROOT_PASSWORD="${{ secrets.MYSQL_ROOT_PASSWORD }}" \
+            --dry-run=client -o yaml | kubectl apply -f -
+
+          kubectl create secret generic app-secret -n sos-golpes \
+            --from-literal=COGNITO_USER_POOL_ID="${{ secrets.COGNITO_USER_POOL_ID }}" \
+            --from-literal=COGNITO_CLIENT_ID="${{ secrets.COGNITO_CLIENT_ID }}" \
+            --from-literal=COGNITO_CLIENT_SECRET="${{ secrets.COGNITO_CLIENT_SECRET }}" \
+            --from-literal=AWS_ACCESS_KEY_ID="${{ secrets.AWS_ACCESS_KEY_ID }}" \
+            --from-literal=AWS_SECRET_ACCESS_KEY="${{ secrets.AWS_SECRET_ACCESS_KEY }}" \
+            --from-literal=AWS_DEFAULT_REGION="${{ secrets.AWS_DEFAULT_REGION }}" \
+            --from-literal=GOOGLE_SAFE_BROWSING_KEY="${{ secrets.GOOGLE_SAFE_BROWSING_KEY }}" \
+            --from-literal=VIRUSTOTAL_KEY="${{ secrets.VIRUSTOTAL_KEY }}" \
+            --dry-run=client -o yaml | kubectl apply -f -
+
+          if ! kubectl -n sos-golpes get secret rsa-keys >/dev/null 2>&1; then
+            openssl genrsa -out /tmp/private_key.pem 2048
+            openssl rsa -in /tmp/private_key.pem -pubout -out /tmp/public_key.pem
+            kubectl create secret generic rsa-keys -n sos-golpes \
+              --from-file=private_key.pem=/tmp/private_key.pem \
+              --from-file=public_key.pem=/tmp/public_key.pem
+          fi
+
+          if ! kubectl -n sos-golpes get secret gateway-tls >/dev/null 2>&1; then
+            openssl req -x509 -nodes -days 365 -newkey rsa:2048 \
+              -keyout /tmp/localhost-key.pem \
+              -out /tmp/localhost.pem \
+              -subj "/CN=localhost"
+            kubectl create secret tls gateway-tls -n sos-golpes \
+              --cert=/tmp/localhost.pem \
+              --key=/tmp/localhost-key.pem
+          fi
+
+      - name: Aplicar manifests
+        run: |
+          kubectl apply -f kubernetes/namespace.yaml
+          kubectl apply -f kubernetes/db/configmap-schema.yaml
+          kubectl apply -f kubernetes/db/pvc.yaml
+          kubectl apply -f kubernetes/db/deployment.yaml
+          kubectl apply -f kubernetes/db/service.yaml
+          for svc in identity user threat admin audit reports frontend; do
+            kubectl apply -f kubernetes/$svc/deployment.yaml
+            kubectl apply -f kubernetes/$svc/service.yaml
+          done
+          kubectl apply -f kubernetes/api-gateway/configmap-nginx.yaml
+          kubectl apply -f kubernetes/api-gateway/deployment.yaml
+          kubectl apply -f kubernetes/api-gateway/service.yaml
+
+      - name: Atualizar imagens para a tag do commit
+        run: |
+          for svc in identity user threat admin audit reports frontend api-gateway; do
+            kubectl -n sos-golpes set image deployment/$svc \
+              $svc=${{ secrets.DOCKER_USERNAME }}/sos-golpes-$svc:${{ github.sha }}
+          done
+
+      - name: Aguardar
+        run: |
+          for svc in identity user threat admin audit reports frontend api-gateway; do
+            kubectl -n sos-golpes rollout status deployment/$svc --timeout=180s
+          done

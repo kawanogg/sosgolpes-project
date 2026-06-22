@@ -1,0 +1,41 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: threat
+  namespace: sos-golpes
+  labels:
+    app: threat
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: threat
+  template:
+    metadata:
+      labels:
+        app: threat
+    spec:
+      containers:
+        - name: threat
+          image: sos-golpes-threat:latest
+          imagePullPolicy: Always
+          ports:
+            - name: http
+              containerPort: 8000
+          env:
+            - name: MYSQL_ROOT_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: db-secret
+                  key: MYSQL_ROOT_PASSWORD
+          envFrom:
+            - secretRef:
+                name: app-secret
+          volumeMounts:
+            - name: rsa-keys
+              mountPath: /var/keys
+              readOnly: true
+      volumes:
+        - name: rsa-keys
+          secret:
+            secretName: rsa-keys
